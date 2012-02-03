@@ -56,8 +56,13 @@ class zopen(object):
 		self._lines = self._text.split(self._splitChar)
 		self._text = ""
 		# if there's more than one line, store the last to combine with the next chunk
+		# (but if there's only one line, and more to read, then keep reading until we get a linebreak)
 		if len(self._lines) > 1:
 			self._text = self._lines.pop()
+		elif self._dc:
+			self._text = self._lines.pop()
+			self._chunkSize *= 2
+			return self.__next()
 		# reverse the remaining lines into a stack and pop one to return
 		self._lines.reverse()
 		return self._lines.pop()
