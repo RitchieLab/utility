@@ -62,7 +62,7 @@ class zopen(object):
 		elif self._dc:
 			self._text = self._lines.pop()
 			self._chunkSize *= 2
-			return self.__next()
+			return self.__next__()
 		# reverse the remaining lines into a stack and pop one to return
 		self._lines.reverse()
 		return self._lines.pop()
