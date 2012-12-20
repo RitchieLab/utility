@@ -46,10 +46,10 @@ class zopen(object):
 			data = self._filePtr.read(self._chunkSize)
 			if data:
 				self._text += self._dc.decompress(data)
-				del data
+				data = None
 			else:
 				self._text += self._dc.flush()
-				del self._dc
+				self._dc = None
 		# if there's no text left, we're done
 		if not self._text:
 			raise StopIteration
