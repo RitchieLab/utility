@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import zlib
 
 
@@ -72,6 +73,16 @@ class zopen(object):
 	def next(self):
 		return self.__next__()
 	#next()
+	
+	
+	def seek(self, offset, whence = 0):
+		if offset != 0:
+			raise Exception("zfile.seek() does not support offsets != 0")
+		self._filePtr.seek(0, whence)
+		self._dc.flush()
+		self._text = ""
+		self._lines = list()
+	#seek()
 	
 #zopen
 
