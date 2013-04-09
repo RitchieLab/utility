@@ -10,7 +10,7 @@ class zopen(object):
 		self._filePtr = open(fileName,'rb')
 		self._splitChar = splitChar
 		self._chunkSize = chunkSize
-		self._dc = zlib.decompressobj(zlib.MAX_WBITS+32) # autodetect gzip or zlib header
+		self._dc = zlib.decompressobj(zlib.MAX_WBITS | 32) # autodetect gzip or zlib header
 		self._text = ""
 		self._lines = list()
 	#__init__()
@@ -43,7 +43,11 @@ class zopen(object):
 			return self._lines.pop()
 		# if there's data left in the source file, read and decompress another chunk
 		if self._dc:
-			data = self._filePtr.read(self._chunkSize)
+			data = self._dc.unused_data
+			if data:
+				self._dc = zlib.decompressobj(zlib.MAX_WBITS | 32) # autodetect gzip or zlib header
+			else:
+				data = self._filePtr.read(self._chunkSize)
 			if data:
 				self._text += self._dc.decompress(data)
 				data = None
