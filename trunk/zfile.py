@@ -83,7 +83,7 @@ class zopen(object):
 		if offset != 0:
 			raise Exception("zfile.seek() does not support offsets != 0")
 		self._filePtr.seek(0, whence)
-		self._dc.flush()
+		self._dc = zlib.decompressobj(zlib.MAX_WBITS | 32) # autodetect gzip or zlib header
 		self._text = ""
 		self._lines = list()
 	#seek()
