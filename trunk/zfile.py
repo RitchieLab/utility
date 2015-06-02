@@ -7,7 +7,11 @@ import zlib
 class zopen(object):
 	
 	def __init__(self, fileName, splitChar="\n", chunkSize=16*1024):
-		self._filePtr = open(fileName,'rb')
+		try:
+			self._filePtr = open(fileName,'rb')
+		except:
+			self._filePtr = None
+			raise
 		self._splitChar = splitChar
 		self._chunkSize = chunkSize
 		self._dc = zlib.decompressobj(zlib.MAX_WBITS | 32) # autodetect gzip or zlib header
