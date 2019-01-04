@@ -7,13 +7,14 @@ import math
 import numpy as np
 
 ###Formatting
-gdat = pd.read_csv("~/Desktop/ACTG_GWAS_TEST.txt", sep=" ")
+gdat = pd.read_csv("~/Desktop/projects/plotly_dash_ACTG/ACTG_GWAS_TEST.txt", sep=" ")
 gdat['Tissue'] = "GWAS"
-tdat = pd.read_csv("~/Desktop/ACTG_TWAS_TEST_map.txt", sep=" ")
+gdat['TissueCategory']= "GWAS"
+tdat = pd.read_csv("~/Desktop/projects/plotly_dash_ACTG/ACTG_TWAS_TEST_map2.txt", sep=" ")
 dat = gdat.append(tdat, ignore_index=True)
 dat[['CHR:BP', 'POS']] = dat['CHR:BP'].str.split(':', expand=True)
-dat = dat[['PHE', 'SNP', 'CHR:BP', 'POS', 'A1:MAF', 'Interaction', 'N', 'pvalue', 'Tissue']]
-dat.columns = ['PHE', 'SNP', 'CHR', 'POS', 'MAF', 'Interaction', 'N', 'pvalue', 'Tissue']
+dat = dat[['PHE', 'SNP', 'CHR:BP', 'POS', 'A1:MAF', 'Interaction', 'N', 'pvalue', 'Tissue', 'TissueCategory']]
+dat.columns = ['PHE', 'SNP', 'CHR', 'POS', 'MAF', 'Interaction', 'N', 'pvalue', 'Tissue', 'TissueCategory']
 dat['CHR'] = dat.CHR.astype(int)
 dat['POS'] = dat.POS.astype(int)
 d_order = dat.sort_values(by=['CHR','POS'])
@@ -59,20 +60,38 @@ for i in d_order.Tissue.unique():
         tissues = {'label': i, 'value': i}
         tl.append(tissues)
 
+#Create dictionary for tissues and tissue categories
+tcdict = d_order.groupby('TissueCategory')['Tissue'].unique().apply(list).to_dict()
+tcdict.pop('GWAS', None)
+
+#Get list of tissue categories for menu
+cl = []
+for i in d_order.TissueCategory.unique():
+    if i != "GWAS":
+        categories = {'label' : i, 'value': i}
+        cl.append(tissues)
 
 app.layout = html.Div([
     html.Div([
         dcc.Dropdown(
             id='interaction-dropdown',
-            options = il
+            options = il,
+            placeholder = "Select an interaction term..."
         ),
     ],style={'width': '48%', 'display': 'inline-block'}),
 
     html.Div([
         dcc.Dropdown(
-            id='tissue-dropdown',
-            options = tl,
+            id='tissue-category-dropdown',
+            options = [{'label' : k, 'value': k} for k in tcdict.keys()],
+            placeholder = "Select a tissue category..."
         ),
+
+        dcc.Dropdown(
+            id='tissue-dropdown',
+            placeholder = "Select a tissue...",
+            multi=True)
+
     ],style={'width': '48%', 'display': 'inline-block'}),
 
     html.Div([
@@ -80,6 +99,44 @@ app.layout = html.Div([
         dcc.Graph(id='gwas-graph'),
     ], style={'width': '100%', 'display': 'inline-block'})
 ])
+
+@app.callback(
+    Output('tissue-dropdown', 'options'),
+    [Input('tissue-category-dropdown', 'value')])
+def set_tissue_options(selected_category):
+    return [{'label': i, 'value': i} for i in tcdict[selected_category]]
+
+@app.callback(
+    Output('tissue-dropdown', 'value'),
+    [Input('tissue-dropdown', 'options')])
+def set_tissue_value(available_options):
+    return available_options[0]['value']
+
+@app.callback(Output('gwas-graph', 'figure'), [Input('interaction-dropdown', 'value'), Input('tissue-dropdown', 'value')])
+def update_graph(selected_dropdown_value, selected_dropdown_value2):
+    #Here it would be possible to split df into 9 separate traces and return the list   
+    df = d_order[(d_order.Interaction==selected_dropdown_value) & (d_order.Tissue=="GWAS")]
+    #cols = df['PHE'].map(colorsIdx)
+    dl = []
+    for i in df.PHE.unique():
+        dfsub = df[df.PHE==i]
+        dff = {'x': dfsub.pos_index, 'y': dfsub.logp, 'mode': 'markers', 'text': dfsub.SNP + '\n' + dfsub.MAF, 'name': i}
+        dl.append(dff)
+    return {
+        'data': dl,
+        'layout': {'shapes': sl, 'title': 'GWAS Plot', 'showlegend': True, 'xaxis': {'range': [xmin, xmax], 'ticktext': lims.chrmin, 'tickvals': lims.av, 'showgrid': False}, 'yaxis': {'range': [ymin,ymax], 'title': '-log10(pvalue)'}, 'hovermode': 'closest'}
+    }
+@app.callback(
+    Output('tissue-dropdown', 'options'),
+    [Input('tissue-category-dropdown', 'value')])
+def set_tissue_options(selected_category):
+    return [{'label': i, 'value': i} for i in tcdict[selected_category]]
+
+@app.callback(
+    Output('tissue-dropdown', 'value'),
+    [Input('tissue-dropdown', 'options')])
+def set_tissue_value(available_options):
+    return available_options[0]['value']
 
 @app.callback(Output('gwas-graph', 'figure'), [Input('interaction-dropdown', 'value'), Input('tissue-dropdown', 'value')])
 def update_graph(selected_dropdown_value, selected_dropdown_value2):
@@ -96,10 +153,11 @@ def update_graph(selected_dropdown_value, selected_dropdown_value2):
         'layout': {'shapes': sl, 'title': 'GWAS Plot', 'showlegend': True, 'xaxis': {'range': [xmin, xmax], 'ticktext': lims.chrmin, 'tickvals': lims.av, 'showgrid': False}, 'yaxis': {'range': [ymin,ymax], 'title': '-log10(pvalue)'}, 'hovermode': 'closest'}
     }
 
-@app.callback(Output('twas-graph', 'figure'), [Input('interaction-dropdown', 'value'), Input('tissue-dropdown', 'value')])
-def update_graph(selected_dropdown_value, selected_dropdown_value2):
+@app.callback(Output('twas-graph', 'figure'), [Input('interaction-dropdown', 'value'), Input('tissue-dropdown', 'value'), Input('tissue-category-dropdown', 'value')])
+def update_graph(selected_dropdown_value, selected_dropdown_value2, selected_dropdown_value3):
     #Here it would be possible to split df into 9 separate traces and return the list   
-    df = d_order[(d_order.Interaction==selected_dropdown_value) & (d_order.Tissue==selected_dropdown_value2)]
+    df = d_order[(d_order.Interaction==selected_dropdown_value) & (d_order['Tissue'].isin(selected_dropdown_value2))]
+    #df = d_order[(d_order.Interaction==selected_dropdown_value) & (d_order.Tissue==selected_dropdown_value2)]
     #cols = df['PHE'].map(colorsIdx)
     dl = []
     for i in df.PHE.unique():
@@ -115,4 +173,3 @@ app.css.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
 
 if __name__ == '__main__':
     app.run_server()
-
