@@ -88,6 +88,7 @@ app.layout = html.Div([
             min=0,
             max=math.ceil(d_order['MAF'].max()*10)/10,
             step=0.1,
+            #Change marks to update dynamically based on range
             marks={0: str(0), 0.1: str(0.1), 0.2: str(0.2), 0.3: str(0.3), 0.4: str(0.4), 0.5: str(0.5), 0.6: str(0.6), 0.7: str(0.7), 0.8: str(0.8), 0.9: str(0.9), 1: str(1)},
             value=[0,math.ceil(d_order['MAF'].max()*10)/10],
             allowCross=False
