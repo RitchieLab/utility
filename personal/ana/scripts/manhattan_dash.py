@@ -73,6 +73,12 @@ for i in d_order.TissueCategory.unique():
         categories = {'label' : i, 'value': i}
         cl.append(tissues)
 
+#Get marker positions for slider based on max MAF
+if math.ceil(d_order['MAF'].max()*10)/10 > 0.5:
+   markers={0: str(0), 0.1: str(0.1), 0.2: str(0.2), 0.3: str(0.3), 0.4: str(0.4), 0.5: str(0.5), 0.6: str(0.6), 0.7: str(0.7), 0.8: str(0.8), 0.9: str(0.9), 1: str(1)}
+else:
+   markers={0: str(0), 0.05: str(0.05), 0.1: str(0.1), 0.15: str(0.15), 0.2: str(0.2), 0.25: str(0.25), 0.3: str(0.3), 0.35: str(0.35), 0.4: str(0.4), 0.45: str(0.45), 0.5: str(0.5)}
+
 app.layout = html.Div([
     html.Div([
         dcc.Dropdown(
@@ -82,17 +88,16 @@ app.layout = html.Div([
         ),
     ],style={'width': '49%', 'display': 'inline-block'}),
     #html.H1(children='MAF', style={'width': '45%', 'display': 'inline-block', 'font-size': '18px', 'textAlign': 'center'}), 
+
     html.Div([
         dcc.RangeSlider(
             id='maf-slider',
             min=0,
             max=math.ceil(d_order['MAF'].max()*10)/10,
             step=0.1,
-            #Change marks to update dynamically based on range
-            marks={0: str(0), 0.1: str(0.1), 0.2: str(0.2), 0.3: str(0.3), 0.4: str(0.4), 0.5: str(0.5), 0.6: str(0.6), 0.7: str(0.7), 0.8: str(0.8), 0.9: str(0.9), 1: str(1)},
+            marks=markers,
             value=[0,math.ceil(d_order['MAF'].max()*10)/10],
             allowCross=False
-            #marks={round(interaction,1): round(interaction, 1) for interaction in np.linspace(0,round(d_order['MAF'].max(), 1),11)}
         )
     ],style={'width': '49%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'right'}),
 
@@ -102,7 +107,8 @@ app.layout = html.Div([
             options = [{'label' : k, 'value': k} for k in tcdict.keys()],
             placeholder = "Select a tissue category..."
         ),
-        ],style={'width': '49%', 'display': 'inline-block', 'horizontalAlign': 'right'}),
+    ],style={'width': '49%', 'display': 'inline-block', 'horizontalAlign': 'right'}),
+
     html.Div([
         dcc.Dropdown(
             id='tissue-dropdown',
@@ -132,7 +138,6 @@ def set_tissue_value(available_options):
 @app.callback(Output('gwas-graph', 'figure'), [Input('interaction-dropdown', 'value'), Input('tissue-dropdown', 'value'), Input('maf-slider', 'value')]) #, [State('maf-slider', 'marks')])
 def update_graph(selected_dropdown_value, selected_dropdown_value2, selected_maf):
     #Here it would be possible to split df into 9 separate traces and return the list
-    #mafvalue = marks[str(selected_maf)]
     df = d_order[(d_order.Interaction==selected_dropdown_value) & (d_order.Tissue=="GWAS") & (d_order.MAF > selected_maf[0]) & (d_order.MAF < selected_maf[1])]
     #cols = df['PHE'].map(colorsIdx)
     dl = []
