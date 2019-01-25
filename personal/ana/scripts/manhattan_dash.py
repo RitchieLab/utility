@@ -36,6 +36,9 @@ ymax = math.ceil(d_order['logp'].max())
 xmin = 0
 xmax = d_order['pos_index'].max()
 
+#Hover
+#d_order['Hover'] = np.where(d_order['Tissue']=='GWAS', d_order['SNP'] + "\nN:" + d_order['N'].map(str) + "\nMAF:" + d_order['MAF'].map(str) + "\nGene:" + d_order['Gene'].map(str), "N:" + d_order['N'].map(str) + "\nTissue:" + d_order['Tissue'] + "\nGene:" + d_order['Gene'].map(str))
+
 #Create shapes for chromosomes
 sl = []
 for i in range(int(len(limsshape.chrmin.unique()))):
