@@ -52,7 +52,11 @@ for i in range(int(len(limsshape.chrmin.unique()))):
 #colorsIdx = {'p_altastgr2w48': 'rgb(215,48,39)', 'p_altastgr3w48': 'rgb(215,148,39)', 'p_altastgr4w48': 'rgb(66, 134, 244)'}
 
 #Set up the menus
-app = dash.Dash('Hello World')
+app = dash.Dash(
+        meta_tags=[
+                {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+        ]
+)
 #Make these into a loop to get the label and values
 
 #Get list of interaction terms for menu
