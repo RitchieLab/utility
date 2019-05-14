@@ -124,11 +124,11 @@ app.layout = html.Div([
             multi=True)
 
     ],style={'width': '49%', 'display': 'inline-block', 'horizontalAlign': 'right'}),
-
+    
     html.Div([
-        dcc.Graph(id='twas-graph'),
-        dcc.Graph(id='gwas-graph'),
-    ], style={'width': '100%', 'display': 'inline-block'})
+        dcc.Graph(id='twas-graph', style={'width': '180vh', 'height': '45vh', 'display': 'inline-block'}),
+        dcc.Graph(id='gwas-graph', style={'width': '180vh', 'height': '45vh', 'display': 'inline-block'}),
+    ])
 ])
 
 @app.callback(
