@@ -11,7 +11,10 @@ gdat = pd.read_csv("~/Desktop/projects/plotly_dash_ACTG/ACTG_GWAS_TEST.txt", sep
 gdat[['A1', 'MAF']] = gdat['A1:MAF'].str.split(':', expand=True)
 gdat['Tissue'] = "GWAS"
 gdat['TissueCategory']= "GWAS"
-gdat = gdat[['PHE', 'SNP', 'CHR:BP', 'A1', 'MAF', 'Interaction', 'N', 'pvalue', 'Tissue', 'TissueCategory']]
+gdat['MAF'] = pd.to_numeric(gdat['MAF'])
+gdat['MAF2'] = np.where(gdat['MAF']>0.5, 1-gdat['MAF'], gdat['MAF'])
+gdat = gdat[['PHE', 'SNP', 'CHR:BP', 'A1', 'MAF2', 'Interaction', 'N', 'pvalue', 'Tissue', 'TissueCategory']]
+gdat.columns = ['PHE', 'SNP', 'CHR:BP', 'A1', 'MAF', 'Interaction', 'N', 'pvalue', 'Tissue', 'TissueCategory']
 tdat = pd.read_csv("~/Desktop/projects/plotly_dash_ACTG/ACTG_TWAS_TEST_map2.txt", sep=" ")
 dat = gdat.append(tdat, ignore_index=True)
 dat[['CHR', 'POS']] = dat['CHR:BP'].str.split(':', expand=True)
@@ -79,8 +82,10 @@ for i in d_order.TissueCategory.unique():
 #Get marker positions for slider based on max MAF
 if math.ceil(d_order['MAF'].max()*10)/10 > 0.5:
    markers={0: str(0), 0.1: str(0.1), 0.2: str(0.2), 0.3: str(0.3), 0.4: str(0.4), 0.5: str(0.5), 0.6: str(0.6), 0.7: str(0.7), 0.8: str(0.8), 0.9: str(0.9), 1: str(1)}
+   maxmaf = 1
 else:
    markers={0: str(0), 0.05: str(0.05), 0.1: str(0.1), 0.15: str(0.15), 0.2: str(0.2), 0.25: str(0.25), 0.3: str(0.3), 0.35: str(0.35), 0.4: str(0.4), 0.45: str(0.45), 0.5: str(0.5)}
+   maxmaf = 0.5
 
 app.layout = html.Div([
     html.Div([
@@ -96,10 +101,10 @@ app.layout = html.Div([
         dcc.RangeSlider(
             id='maf-slider',
             min=0,
-            max=math.ceil(d_order['MAF'].max()*10)/10,
-            step=0.1,
+            max=maxmaf,
+            step=maxmaf/10,
             marks=markers,
-            value=[0,math.ceil(d_order['MAF'].max()*10)/10],
+            value=[0,maxmaf],
             allowCross=False
         )
     ],style={'width': '49%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'right'}),
