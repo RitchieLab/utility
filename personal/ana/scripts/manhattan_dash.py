@@ -7,7 +7,7 @@ import math
 import numpy as np
 
 ###Formatting
-gdat = pd.read_csv("~/Desktop/projects/plotly_dash_ACTG/ACTG_GWAS_TEST.txt", sep=" ")
+gdat = pd.read_csv("~/Desktop/projects/plotly_dash/ACTG_GWAS_TEST.txt", sep=" ")
 gdat[['A1', 'MAF']] = gdat['A1:MAF'].str.split(':', expand=True)
 gdat['Tissue'] = "GWAS"
 gdat['TissueCategory']= "GWAS"
@@ -15,7 +15,7 @@ gdat['MAF'] = pd.to_numeric(gdat['MAF'])
 gdat['MAF2'] = np.where(gdat['MAF']>0.5, 1-gdat['MAF'], gdat['MAF'])
 gdat = gdat[['PHE', 'SNP', 'CHR:BP', 'A1', 'MAF2', 'Interaction', 'N', 'pvalue', 'Tissue', 'TissueCategory']]
 gdat.columns = ['PHE', 'SNP', 'CHR:BP', 'A1', 'MAF', 'Interaction', 'N', 'pvalue', 'Tissue', 'TissueCategory']
-tdat = pd.read_csv("~/Desktop/projects/plotly_dash_ACTG/ACTG_TWAS_TEST_map2.txt", sep=" ")
+tdat = pd.read_csv("~/Desktop/projects/plotly_dash/ACTG_TWAS_TEST_map2.txt", sep=" ")
 dat = gdat.append(tdat, ignore_index=True)
 dat[['CHR', 'POS']] = dat['CHR:BP'].str.split(':', expand=True)
 dat = dat[['PHE', 'SNP', 'CHR', 'POS', 'A1', 'MAF', 'Interaction', 'N', 'pvalue', 'Tissue', 'TissueCategory']]
