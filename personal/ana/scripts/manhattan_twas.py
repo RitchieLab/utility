@@ -98,13 +98,6 @@ app.layout = html.Div([
     ])
 ])
 
-
-#@app.callback(
-#    Output('tissue-dropdown', 'value'),
-#    [Input('tissue-dropdown', 'options')])
-#def set_tissue_value(available_options):
-#    return available_options[0]['value']
-
 @app.callback(Output('twas-graph', 'figure'), [Input('dataset-dropdown', 'value'), Input('tissue-dropdown', 'value'), Input('postinc-slider', 'value')])
 def update_graph(selected_dropdown_value, selected_dropdown_value2, selected_postinc):
     #Here it would be possible to split df into 9 separate traces and return the list   
