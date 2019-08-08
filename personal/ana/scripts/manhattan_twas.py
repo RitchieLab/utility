@@ -31,7 +31,7 @@ xmin = 0
 xmax = d_order['pos_index'].max()
 
 #Hover
-d_order['Hover'] = "Gene: " + d_order['ENSG_gene'] + "\npvalue: " + d_order['pvalue'].astype(str) + "\nDataset: " + d_order['data'] + "\nTissue: " + d_order['tissue']
+d_order['Hover'] = "Gene: " + d_order['ENSG_gene'] + "<br>pvalue: " + d_order['pvalue'].astype(str) + "<br>Dataset: " + d_order['data'] + "<br>Tissue: " + d_order['tissue']
 
 #Create shapes for chromosomes
 sl = []
@@ -59,8 +59,7 @@ for i in d_order.tissue.unique():
         tissues = {'label': i, 'value': i}
         tl.append(tissues)
 
-
-#Get marker positions for slider based on max posterior inclusion
+#Get marker positions for slider based on max MAF
 markers={0: str(0), 0.1: str(0.1), 0.2: str(0.2), 0.3: str(0.3), 0.4: str(0.4), 0.5: str(0.5), 0.6: str(0.6), 0.7: str(0.7), 0.8: str(0.8), 0.9: str(0.9), 1: str(1)}
 maxpostinc = 1
 
@@ -69,21 +68,9 @@ app.layout = html.Div([
         dcc.Dropdown(
             id='dataset-dropdown',
             options = dl,
-            placeholder = "Select an dataset..."
+            placeholder = "Select a dataset..."
         ),
-    ],style={'width': '49%', 'display': 'inline-block'}),
-
-    html.Div([
-        dcc.RangeSlider(
-            id='postinc-slider',
-            min=0,
-            max=maxpostinc,
-            step=maxpostinc/10,
-            marks=markers,
-            value=[0,maxpostinc],
-            allowCross=False
-        )
-    ],style={'width': '49%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'right'}),
+    ],style={'width': '49%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'left'}),
 
     html.Div([
         dcc.Dropdown(
@@ -91,17 +78,30 @@ app.layout = html.Div([
             options = tl,
             placeholder = "Select a tissue..."
         ),
-    ],style={'width': '49%', 'display': 'inline-block', 'horizontalAlign': 'right'}),
+    ],style={'width': '49%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'right'}),
 
     html.Div([
-        dcc.Graph(id='twas-graph', style={'width': '180vh', 'height': '45vh', 'display': 'inline-block'}),
-    ])
+        dcc.Graph(id='twas-graph', style={'width': '180vh', 'height': '85vh', 'display': 'inline-block'})
+    ]),
+
+    html.Div([
+        html.Label("Posterior Inclusion Probability Range:"),
+        dcc.RangeSlider(
+            id='postinc-slider',
+            min=0,
+            max=1,
+            step=0.1,
+            marks=markers,
+            value=[0,1],
+            allowCross=False
+        )
+    ],style={'height': '90px', 'width': '48%', 'display': 'inline-block', 'padding-left': '23%', 'padding-right': '23%'})
+
 ])
 
 @app.callback(Output('twas-graph', 'figure'), [Input('dataset-dropdown', 'value'), Input('tissue-dropdown', 'value'), Input('postinc-slider', 'value')])
-def update_graph(selected_dropdown_value, selected_dropdown_value2, selected_postinc):
-    #Here it would be possible to split df into 9 separate traces and return the list   
-    df = d_order[(d_order.data==selected_dropdown_value) & (d_order.tissue==selected_dropdown_value2) & (d_order.posterior_inclusion > selected_postinc[0]) & (d_order.posterior_inclusion < selected_postinc[1])]
+def update_graph(selected_dropdown_value, selected_dropdown_value2, slider_value):
+    df = d_order[(d_order.data==selected_dropdown_value) & (d_order.tissue==selected_dropdown_value2) & (d_order.posterior_inclusion >= slider_value[0]) & (d_order.posterior_inclusion <= slider_value[1])]
     dsl = []
     for i in df.trait.unique():
         dfsub = df[df.trait==i]
