@@ -33,7 +33,7 @@ lims = pd.concat([minRows.reset_index(), maxRows.reset_index()], axis=1)
 lims['av'] = lims[['posindmax', 'posindmin']].mean(axis=1)
 #Get every other row for background shape
 limsshape = lims.iloc[1::2, :]
-d_order['logp'] = -np.log(d_order['pvalue'])
+d_order['logp'] = -np.log10(d_order['pvalue'])
 ymin = math.floor(d_order['logp'].min())
 ymax = math.ceil(d_order['logp'].max())
 xmin = 0
