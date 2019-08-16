@@ -31,7 +31,7 @@ xmin = 0
 xmax = d_order['pos_index'].max()
 
 #Hover
-d_order['Hover'] = "Gene: " + d_order['gene_name'] + "<br>Position: " + d_order['chromosome'].astype(str) + ":" + d_order['gene_start_position'].astype(str) + "-" + d_order['gene_end_position'].astype(str) + "<br>ICD Category: " + d_order['category'] + "<br>pvalue: " + d_order['pvalue'].astype(str) + "<br>Dataset: " + d_order['data'] + "<br>Tissue: " + d_order['tissue']
+d_order['Hover'] = "Gene: " + d_order['gene_name'] + "<br>Position: " + d_order['chromosome'].astype(str) + ":" + d_order['gene_start_position'].astype(str) + "-" + d_order['gene_end_position'].astype(str) + "<br>Trait: " + d_order['trait'] + "<br>ICD Category: " + d_order['category'] + "<br>pvalue: " + d_order['pvalue'].astype(str) + "<br>Dataset: " + d_order['data'] + "<br>Tissue: " + d_order['tissue']
 
 #Create shapes for chromosomes
 sl = []
@@ -49,12 +49,14 @@ app = dash.Dash(
 
 #Get terms for menu
 nl = []
+nl.append({'label': "All", 'value': "All"})
 for i in d_order.novelty.unique():
    choices = {'label': i, 'value': i}
    nl.append(choices)
 
 #Get list of tissue terms for menu
 tl = []
+tl.append({'label': "All", 'value': "All"})
 for i in d_order.tissue.unique():
         tissues = {'label': i, 'value': i}
         tl.append(tissues)
@@ -119,7 +121,14 @@ app.layout = html.Div([
 
 @app.callback(Output('twas-graph', 'figure'), [Input('tissue-dropdown', 'value'), Input('novelty-dropdown', 'value'), Input('chr-checklist', 'values'), Input('postinc-slider', 'value')])
 def update_graph(selected_dropdown_value, selected_dropdown_value2, chr_value, slider_value):
-    df = d_order[(d_order.novelty==selected_dropdown_value2) & (d_order.tissue==selected_dropdown_value) & (d_order.chromosome.isin(chr_value)) & (d_order.posterior_inclusion >= slider_value[0]) & (d_order.posterior_inclusion <= slider_value[1])]
+    if selected_dropdown_value=="All" and selected_dropdown_value2=="All":
+        df = d_order[(d_order.chromosome.isin(chr_value)) & (d_order.posterior_inclusion >= slider_value[0]) & (d_order.posterior_inclusion <= slider_value[1])]
+    elif selected_dropdown_value=="All" and selected_dropdown_value2!="All":
+        df = d_order[(d_order.tissue==selected_dropdown_value2) & (d_order.chromosome.isin(chr_value)) & (d_order.posterior_inclusion >= slider_value[0]) & (d_order.posterior_inclusion <= slider_value[1])]
+    elif selected_dropdown_value!="All" and selected_dropdown_value2=="All":
+        df = d_order[(d_order.tissue==selected_dropdown_value) & (d_order.chromosome.isin(chr_value)) & (d_order.posterior_inclusion >= slider_value[0]) & (d_order.posterior_inclusion <= slider_value[1])]
+    else:
+        df = d_order[(d_order.novelty==selected_dropdown_value2) & (d_order.tissue==selected_dropdown_value) & (d_order.chromosome.isin(chr_value)) & (d_order.posterior_inclusion >= slider_value[0]) & (d_order.posterior_inclusion <= slider_value[1])]
     dsl = []
     for i in df.category.unique():
         dfsub = df[df.category==i]
