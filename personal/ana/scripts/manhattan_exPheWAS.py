@@ -31,7 +31,7 @@ xmin = 0
 xmax = d_order['pos_index'].max()
 
 #Hover
-d_order['Hover'] = "Gene: " + d_order['gene_name'] + "<br>Position: " + d_order['chromosome'].astype(str) + ":" + d_order['gene_start_position'].astype(str) + "-" + d_order['gene_end_position'].astype(str) + "<br>Trait: " + d_order['trait'] + "<br>ICD Category: " + d_order['category'] + "<br>pvalue: " + d_order['pvalue'].astype(str) + "<br>Dataset: " + d_order['data'] + "<br>Tissue: " + d_order['tissue']
+d_order['Hover'] = "Gene: " + d_order['gene_name'] + "<br>Position: " + d_order['chromosome'].astype(str) + ":" + d_order['gene_start_position'].astype(str) + "-" + d_order['gene_end_position'].astype(str) + "<br>Trait: " + d_order['trait'].astype(str) + "<br>ICD Category: " + d_order['category'] + "<br>pvalue: " + d_order['pvalue'].astype(str) + "<br>Dataset: " + d_order['data'] + "<br>Tissue: " + d_order['tissue']
 
 #Create shapes for chromosomes
 sl = []
