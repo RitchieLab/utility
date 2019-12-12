@@ -46,7 +46,7 @@ app.layout = html.Div([
             #start_date=dt(2003, 1, 1),
             end_date=dt(2019, 4, 1),
         )
-    ],style={'height': '60px', 'width': '33%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'right'}),
+    ],style={'height': '60px', 'width': '33%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'right', 'backgroundColor':'#E8E8E8'}),
 
     html.Div([
         html.Label('Labs'),
@@ -56,7 +56,7 @@ app.layout = html.Div([
             placeholder = "Select a lab...",
             multi=True
         ),
-    ],style={'width': '33%', 'display': 'inline-block', 'verticalAlign': 'top'}),
+    ],style={'width': '33%', 'display': 'inline-block', 'verticalAlign': 'top', 'backgroundColor':'#E8E8E8'}),
 
     html.Div([
         html.Label('Medications'),
@@ -66,21 +66,21 @@ app.layout = html.Div([
             placeholder = "Select a medicationm category...",
             multi=True
         ),
-    ],style={'width': '33%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'left'}),
+    ],style={'width': '33%', 'display': 'inline-block', 'verticalAlign': 'top', 'horizontalAlign': 'left', 'backgroundColor':'#E8E8E8'}),
 
     html.Div([
-        dcc.Graph(id='icd-graph', style={'width': '180vh', 'height': '28vh', 'display': 'inline-block'}),
+        dcc.Graph(id='icd-graph', style={'width': '98vw', 'height': '28vh', 'display': 'inline-block', 'backgroundColor':'#E8E8E8'}),
 #    ]),
 
   #  html.Div([
-        dcc.Graph(id='lab-graph', style={'width': '180vh', 'height': '28vh', 'display': 'inline-block'}),
+        dcc.Graph(id='lab-graph', style={'width': '98vw', 'height': '28vh', 'display': 'inline-block', 'backgroundColor':'#E8E8E8'}),
  #   ]),
 
  #   html.Div([
-        dcc.Graph(id='med-graph', style={'width': '180vh', 'height': '28vh', 'display': 'inline-block'})
+        dcc.Graph(id='med-graph', style={'width': '98vw', 'height': '28vh', 'display': 'inline-block', 'backgroundColor':'#E8E8E8'})
     ])
 
-])
+], style={'backgroundColor':'#E8E8E8'})
 
 @app.callback(Output('icd-graph', 'figure'), [Input('date-range-picker', 'start_date'), Input('date-range-picker', 'end_date')])
 def update_graph(start_date, end_date):
@@ -94,7 +94,7 @@ def update_graph(start_date, end_date):
         dcl.append(dff)
     return {
         'data': dcl,
-        'layout': {'title': 'ICD Codes', 'showlegend': True, 'xaxis': {'range': [start_date, end_date]}, 'hovermode': 'closest'},
+        'layout': {'showlegend': True, 'xaxis': {'title':'ICD Codes','range': [start_date, end_date]}, 'hovermode': 'closest', 'margin':{'t':15}},
         'style': {'marginBottom': '0.1em', 'marginTop': '0.1em'}
     }
 
@@ -106,11 +106,11 @@ def update_graph(start_date, end_date, value):
         dfsub = dfl[dfl.DATASET==i]
         dfsub['Hover'] = dfsub.ABNORMAL
         dfs = dfsub.sort_values(by='RESULT_DATE_SHIFT', ascending=True)
-        dff = {'x': dfs.RESULT_DATE_SHIFT, 'y': dfs.RESULT_VALUE_NUM, 'mode': 'line', 'hover': dfs.Hover, 'name': i}
+        dff = {'x': dfs.RESULT_DATE_SHIFT, 'y': dfs.RESULT_VALUE_NUM, 'mode': 'lines+markers', 'hover': dfs.Hover, 'name': i}
         dcl.append(dff)
     return {
         'data': dcl,
-        'layout': {'title': 'Clinical Labs', 'showlegend': True, 'xaxis': {'range': [start_date, end_date]}, 'hovermode': 'closest'}
+        'layout': {'showlegend': True, 'xaxis': {'title': 'Clinical Labs', 'range': [start_date, end_date]}, 'hovermode': 'closest', 'margin':{'t':0}}
     }
 
 @app.callback(Output('med-graph', 'figure'), [Input('date-range-picker', 'start_date'), Input('date-range-picker', 'end_date'), Input('med-dropdown', 'value')])
@@ -120,11 +120,11 @@ def update_graph(start_date, end_date, value):
     for i in dfl.Medication.unique():
         dfsub = dfl[dfl.Medication==i]
         dfsub['Hover'] = dfsub.Category
-        dff = {'x': dfsub.RX_DATE, 'y': 1, 'mode': 'markers', 'hover': dfsub.Hover, 'name': i}
+        dff = {'x': dfsub.RX_DATE, 'y': dfsub.Medication, 'mode': 'markers', 'hover': dfsub.Hover, 'name': i}
         dcl.append(dff)
     return {
         'data': dcl,
-        'layout': {'title': 'Medications', 'showlegend': True, 'xaxis': {'range': [start_date, end_date]}, 'hovermode': 'closest'}
+        'layout': {'showlegend': True, 'xaxis': {'title': 'Medications','range': [start_date, end_date]}, 'hovermode': 'closest', 'margin':{'t':0}}
     }
 
 
@@ -132,5 +132,3 @@ app.css.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
 
 if __name__ == '__main__':
     app.run_server()
-
-   
