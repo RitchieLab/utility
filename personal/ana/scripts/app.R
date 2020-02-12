@@ -4,13 +4,15 @@ library(ggplot2)
 library(DT)
 library(waffle)
 library(data.table)
+library(dplyr)
 
 ui <- dashboardPage(
   dashboardHeader(title="PMBB Demographics"),
   dashboardSidebar(disable = TRUE),
   dashboardBody(
     # Boxes need to be put in a row (or column)
-    fluidRow(
+    fluidPage(
+      fluidRow(
       column(width=4,
              box(
                plotOutput("plot1", height = 260), 
@@ -59,6 +61,7 @@ ui <- dashboardPage(
                status = "warning",
                width=NULL
             )
+      )
       ),
       fluidRow(
         column(width=12,
@@ -104,20 +107,21 @@ server <- function(input, output) {
     } else {
       levs=rev(c("WHITE", "BLACK", "UNKNOWN", "OTHER", "ASIAN", "HI PAC ISLAND","AM IND AK NATIVE"))
     }
-    #ggplot(data=plot_eth, aes(x=factor(RACE_CODE, levels=levs), y=N, fill=RACE_CODE)) +
-    #  geom_bar(stat="identity") + theme_minimal() + scale_fill_brewer(palette="Dark2") + coord_flip() +
-    #  xlab("") + ylab("Number of Patients") + theme(axis.text.x = element_text(angle=45)) + guides(fill=FALSE)
-    ggplot(eth[eth$SUBJ_GROUP=="PMBB",], aes(fill=factor(RACE_CODE, levels=levs), values=N)) +  
+    ggplot(plot_eth, aes(fill=factor(RACE_CODE, levels=levs), values=N)) +  
       geom_waffle(n_rows=10, size=0.33, colour="white", flip=TRUE, make_proportional = TRUE) + 
       theme_enhance_waffle() + scale_fill_brewer(name="RACE", palette="Dark2") + coord_equal() + 
       theme(panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_blank(), axis.ticks = element_blank())
   })
   
   output$plot3 <- renderPlot({
-    plot_tti <- tti[tti$SUBJ_GROUP==input$select,]
-    ggplot(data=plot_tti, aes(x=MAPPED_CODE, y=N, fill=CATEGORY)) + geom_bar(stat="identity") + 
+    plot_tti <- tti[tti$SUBJ_GROUP==input$select,] %>% 
+                  ungroup() %>% 
+                  arrange(GENDER, desc(N)) %>% 
+                  mutate(.r=row_number())
+    ggplot(data=plot_tti, aes(x=.r, y=N, fill=CATEGORY)) + geom_bar(stat="identity") + 
       theme_minimal() + scale_fill_brewer(palette="Dark2") + theme(axis.text.x = element_text(angle=45)) + 
-      facet_wrap(.~GENDER, scales = "free_x") + xlab("Code (Mapped to ICD-9)") + ylab("Number of Patients")
+      facet_wrap(.~GENDER, scales = "free_x") + xlab("Code (Mapped to ICD-9)") + ylab("Number of Patients") +
+      scale_x_continuous(breaks = plot_tti$.r, labels=plot_tti$MAPPED_CODE)
   })
   
   output$plot4 <- renderPlot({
