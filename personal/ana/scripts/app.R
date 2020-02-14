@@ -5,6 +5,7 @@ library(DT)
 library(waffle)
 library(data.table)
 library(dplyr)
+#library(grid)
 
 ui <- dashboardPage(
   dashboardHeader(title="PMBB Demographics"),
@@ -86,8 +87,8 @@ server <- function(input, output) {
   tti <- read.delim("Top_10_ICD.txt", stringsAsFactors = FALSE)
   cat <- read.delim("PMBB_ICD_CAT_N.txt", stringsAsFactors = FALSE)
   cat$Category[cat$Category=="NULL"] <- "Other"
-  lab <- as.data.frame(data.table::fread("PMBB_LABS.txt"))
-  lab$RESULT_VALUE_NUM <- as.numeric(lab$RESULT_VALUE_NUM)
+  #lab <- as.data.frame(data.table::fread("PMBB_LABS.txt"))
+  #lab$RESULT_VALUE_NUM <- as.numeric(lab$RESULT_VALUE_NUM)
   rec <- read.delim("Department_Recruitment_dummy.txt")
 
   output$plot1 <- renderPlot({
@@ -107,6 +108,9 @@ server <- function(input, output) {
     } else {
       levs=rev(c("WHITE", "BLACK", "UNKNOWN", "OTHER", "ASIAN", "HI PAC ISLAND","AM IND AK NATIVE"))
     }
+    #ggplot(data=plot_eth, aes(x=factor(RACE_CODE, levels=levs), y=N, fill=RACE_CODE)) +
+    #  geom_bar(stat="identity") + theme_minimal() + scale_fill_brewer(palette="Dark2") + coord_flip() +
+    #  xlab("") + ylab("Number of Patients") + theme(axis.text.x = element_text(angle=45)) + guides(fill=FALSE)
     ggplot(plot_eth, aes(fill=factor(RACE_CODE, levels=levs), values=N)) +  
       geom_waffle(n_rows=10, size=0.33, colour="white", flip=TRUE, make_proportional = TRUE) + 
       theme_enhance_waffle() + scale_fill_brewer(name="RACE", palette="Dark2") + coord_equal() + 
@@ -134,13 +138,19 @@ server <- function(input, output) {
   
   output$plot5 <- renderPlot({
     if(input$select == "GENOTYPED"){
-      plot_age <- lab[lab$SUBJ_GROUP==input$select,]
+      #plot_lab <- lab[lab$SUBJ_GROUP==input$select,]
+      load("GENOTYPED_labs")
+      plot_lab <- genolab
     } else {
-      plot_age <- lab
+      #plot_lab <- lab
+      load("PMBB_labs")
+      plot_lab <- pmbblabs
     }
-    ggplot(data=lab, aes(x=RESULT_VALUE_NUM)) + 
-      geom_density( fill="#1B9E77") + facet_wrap(.~DATASET, scales="free") +
-      theme_minimal() + xlab("Result Value")
+    #p <- ggplot(data=plot_lab, aes(x=RESULT_VALUE_NUM)) + 
+    #  geom_density( fill="#1B9E77") + facet_wrap(.~DATASET, scales="free") +
+    #  theme_minimal() + xlab("Result Value")
+    #pg <- ggplot_build(p)
+    grid::grid.draw(ggplot_gtable(genolab))
   })
   
   output$table <- renderDataTable({datatable(cat[cat$SUBJ_GROUP==input$select, 1:2])})
