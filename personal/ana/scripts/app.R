@@ -2,10 +2,26 @@ library(shiny)
 library(shinydashboard)
 library(ggplot2)
 library(DT)
-library(waffle)
+#library(waffle)
 library(data.table)
 library(dplyr)
+library(ggiraph)
+library(ggforce)
+library(ggrepel)
 #library(grid)
+
+age = read.delim("PMBB_AGE_SEX.txt", stringsAsFactors = FALSE)
+age$AGE <- as.numeric(age$AGE)
+eth <- read.delim("PMBB_RACE_N.txt", stringsAsFactors = FALSE)
+eth$PCT <- ifelse(eth$SUBJ_GROUP=="PMBB", eth$N/53611, eth$N/18981)
+tti <- read.delim("Top_10_ICD.txt", stringsAsFactors = FALSE)
+cat <- read.delim("PMBB_ICD_CAT_N.txt", stringsAsFactors = FALSE)
+cat$Category[cat$Category=="NULL"] <- "Other"
+lab <- as.data.frame(data.table::fread("PMBB_LABS.txt"))
+lab$RESULT_VALUE_NUM <- as.numeric(lab$RESULT_VALUE_NUM)
+l <- unique(lab$DATASET)
+names(l) <- unique(lab$DATASET)
+rec <- read.delim("Department_Recruitment_dummy.txt")
 
 ui <- dashboardPage(
   dashboardHeader(title="PMBB Demographics"),
@@ -24,6 +40,7 @@ ui <- dashboardPage(
              ),
              box(
                plotOutput("plot3", height = 260), 
+               #plotOutput("plot3", height = 260),
                title="Top 10 ICD-9 Codes",
                solidHeader = FALSE,
                status = "info",
@@ -65,31 +82,30 @@ ui <- dashboardPage(
       )
       ),
       fluidRow(
-        column(width=12,
+        column(width=8,
           box(
-            plotOutput("plot5", height = 1000),
+            plotOutput("plot5", height = 260),
             title="Clinical Labs",
             solidHeader=FALSE,
             status="info",
             width=NULL
-          )
+          )),
+        column(width=4,
+          box(
+          title = "Lab",
+          solidHeader = TRUE,
+          status = "primary",
+          selectInput("select_lab", "Lab:", l),
+          width=NULL
         )
+       )
       )
     )
   )
 )
 
 server <- function(input, output) { 
-  age = read.delim("PMBB_AGE_SEX.txt", stringsAsFactors = FALSE)
-  age$AGE <- as.numeric(age$AGE)
-  eth <- read.delim("PMBB_RACE_N.txt", stringsAsFactors = FALSE)
-  eth$PCT <- ifelse(eth$SUBJ_GROUP=="PMBB", eth$N/53611, eth$N/18981)
-  tti <- read.delim("Top_10_ICD.txt", stringsAsFactors = FALSE)
-  cat <- read.delim("PMBB_ICD_CAT_N.txt", stringsAsFactors = FALSE)
-  cat$Category[cat$Category=="NULL"] <- "Other"
-  #lab <- as.data.frame(data.table::fread("PMBB_LABS.txt"))
-  #lab$RESULT_VALUE_NUM <- as.numeric(lab$RESULT_VALUE_NUM)
-  rec <- read.delim("Department_Recruitment_dummy.txt")
+
 
   output$plot1 <- renderPlot({
     if(input$select == "GENOTYPED"){
@@ -111,21 +127,45 @@ server <- function(input, output) {
     #ggplot(data=plot_eth, aes(x=factor(RACE_CODE, levels=levs), y=N, fill=RACE_CODE)) +
     #  geom_bar(stat="identity") + theme_minimal() + scale_fill_brewer(palette="Dark2") + coord_flip() +
     #  xlab("") + ylab("Number of Patients") + theme(axis.text.x = element_text(angle=45)) + guides(fill=FALSE)
-    ggplot(plot_eth, aes(fill=factor(RACE_CODE, levels=levs), values=N)) +  
-      geom_waffle(n_rows=10, size=0.33, colour="white", flip=TRUE, make_proportional = TRUE) + 
-      theme_enhance_waffle() + scale_fill_brewer(name="RACE", palette="Dark2") + coord_equal() + 
-      theme(panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), axis.line = element_blank(), axis.ticks = element_blank())
+   #ggplot(plot_eth, aes(fill=factor(RACE_CODE, levels=levs), values=N)) +  
+  #    geom_waffle(n_rows=10, size=0.33, colour="white", flip=TRUE, make_proportional = TRUE) + 
+   #   theme_enhance_waffle() + scale_fill_brewer(name="RACE", palette="Dark2") + coord_equal() + 
+    #  theme(panel.background = element_blank(), panel.grid.major = element_blank(), 
+     #       panel.grid.minor = element_blank(), axis.line = element_blank(), 
+      #      axis.ticks = element_blank())
+    plot_eth$Label <- paste0(plot_eth$RACE_CODE, " - ", signif(plot_eth$PCT*100, digits = 2), "%")
+    plot_eth <- plot_eth %>%
+      mutate(end = 2 * pi * cumsum(N)/sum(N),
+             start = lag(end, default=0),
+             middle = 0.5 * (start + end),
+             hjust = ifelse(middle > pi, 1, 0),
+             vjust = ifelse(middle < pi/2 | middle > 3 * pi/2, 0, 1))
+    ggplot(plot_eth) + 
+      geom_arc_bar(aes(x0 = 0, y0 = 0, r0 = 0, r = 1,
+                       start = start, end = end, fill = factor(RACE_CODE, levels=rev(levs))), color="white") +
+      geom_text_repel(aes(x = 1.05 * sin(middle), y = 1.05 * cos(middle), label = Label,
+                    hjust = hjust, vjust = vjust)) +
+      coord_fixed() +
+      scale_x_continuous(limits = c(-1.3, 1.4),  # Adjust so labels are not cut off
+                         name = "", breaks = NULL, labels = NULL) +
+      scale_y_continuous(limits = c(-1, 1.2),      # Adjust so labels are not cut off
+                         name = "", breaks = NULL, labels = NULL) +
+      theme(legend.position = "none", panel.background = element_blank()) +
+      scale_fill_brewer(palette="Dark2")
   })
   
   output$plot3 <- renderPlot({
     plot_tti <- tti[tti$SUBJ_GROUP==input$select,] %>% 
                   ungroup() %>% 
-                  arrange(GENDER, desc(N)) %>% 
+                  arrange(GENDER,N) %>% 
                   mutate(.r=row_number())
-    ggplot(data=plot_tti, aes(x=.r, y=N, fill=CATEGORY)) + geom_bar(stat="identity") + 
-      theme_minimal() + scale_fill_brewer(palette="Dark2") + theme(axis.text.x = element_text(angle=45)) + 
-      facet_wrap(.~GENDER, scales = "free_x") + xlab("Code (Mapped to ICD-9)") + ylab("Number of Patients") +
-      scale_x_continuous(breaks = plot_tti$.r, labels=plot_tti$MAPPED_CODE)
+    ggplot(data=plot_tti, aes(x=.r, y=N, fill=CATEGORY, tooltip=N)) + geom_bar(stat="identity") + 
+           theme_minimal() + scale_fill_brewer(palette="Dark2") + 
+           theme(axis.text.x = element_text(angle=45)) + facet_wrap(.~GENDER, scales = "free_y") +
+           xlab("Code (Mapped to ICD-9)") + ylab("Number of Patients") +
+           scale_x_continuous(breaks = plot_tti$.r, labels=plot_tti$MAPPED_CODE) + coord_flip() 
+    #girafe(ggobj=p,   options = list(
+     # opts_sizing(rescale = FALSE) ))
   })
   
   output$plot4 <- renderPlot({
@@ -138,19 +178,32 @@ server <- function(input, output) {
   
   output$plot5 <- renderPlot({
     if(input$select == "GENOTYPED"){
-      #plot_lab <- lab[lab$SUBJ_GROUP==input$select,]
-      load("GENOTYPED_labs")
-      plot_lab <- genolab
+      plot_lab <- lab[lab$SUBJ_GROUP==input$select & lab$DATASET==input$select_lab,]
+
     } else {
-      #plot_lab <- lab
-      load("PMBB_labs")
-      plot_lab <- pmbblabs
+      plot_lab <- lab[lab$DATASET==input$select_lab,]
+      #load("PMBB_labs")
+      #plot_lab <- pmbblabs
     }
-    #p <- ggplot(data=plot_lab, aes(x=RESULT_VALUE_NUM)) + 
-    #  geom_density( fill="#1B9E77") + facet_wrap(.~DATASET, scales="free") +
-    #  theme_minimal() + xlab("Result Value")
+   #dp <- ggplot(data=plot_lab, aes(x=RESULT_VALUE_NUM)) + 
+    #      geom_density( fill="#1B9E77")  +
+     #     theme_minimal() + xlab("Result Value")
     #pg <- ggplot_build(p)
-    grid::grid.draw(ggplot_gtable(genolab))
+    #grid::grid.draw(ggplot_gtable(plot_lab))
+   #bp <- ggplot(data=plot_lab, aes(x=RESULT_VALUE_NUM)) + 
+    #      geom_boxplot() + geom_point(color="#1B9E77")
+    nobs <- nrow(plot_lab[!is.na(plot_lab$RESULT_VALUE_NUM),])
+    nppl <- "N"
+    m <- median(plot_lab$RESULT_VALUE_NUM, na.rm = TRUE)
+   
+    ggplot(data=plot_lab) + 
+      geom_boxplot(aes(y=RESULT_VALUE_NUM, x=1.25), width=0.25) + 
+      geom_jitter(aes(y=RESULT_VALUE_NUM, x=1), color="#1B9E77", position=position_jitter(width = 0.10, height=0), size=0.15, alpha=0.3) + 
+      xlim(0.9,1.4) + coord_flip() + theme_minimal() + 
+      theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.title.y = element_blank(), panel.background = element_blank()) + 
+      ylab("Result Value") +
+      labs(subtitle=paste0("N Obs. = ", nobs, ", N Patients = ", nppl, ", Median = ", signif(m, digits=3)))
+  
   })
   
   output$table <- renderDataTable({datatable(cat[cat$SUBJ_GROUP==input$select, 1:2])})
