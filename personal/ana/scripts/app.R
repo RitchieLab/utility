@@ -124,15 +124,7 @@ server <- function(input, output) {
     } else {
       levs=rev(c("WHITE", "BLACK", "UNKNOWN", "OTHER", "ASIAN", "HI PAC ISLAND","AM IND AK NATIVE"))
     }
-    #ggplot(data=plot_eth, aes(x=factor(RACE_CODE, levels=levs), y=N, fill=RACE_CODE)) +
-    #  geom_bar(stat="identity") + theme_minimal() + scale_fill_brewer(palette="Dark2") + coord_flip() +
-    #  xlab("") + ylab("Number of Patients") + theme(axis.text.x = element_text(angle=45)) + guides(fill=FALSE)
-   #ggplot(plot_eth, aes(fill=factor(RACE_CODE, levels=levs), values=N)) +  
-  #    geom_waffle(n_rows=10, size=0.33, colour="white", flip=TRUE, make_proportional = TRUE) + 
-   #   theme_enhance_waffle() + scale_fill_brewer(name="RACE", palette="Dark2") + coord_equal() + 
-    #  theme(panel.background = element_blank(), panel.grid.major = element_blank(), 
-     #       panel.grid.minor = element_blank(), axis.line = element_blank(), 
-      #      axis.ticks = element_blank())
+   
     plot_eth$Label <- paste0(plot_eth$RACE_CODE, " - ", signif(plot_eth$PCT*100, digits = 2), "%")
     plot_eth <- plot_eth %>%
       mutate(end = 2 * pi * cumsum(N)/sum(N),
@@ -185,13 +177,7 @@ server <- function(input, output) {
       #load("PMBB_labs")
       #plot_lab <- pmbblabs
     }
-   #dp <- ggplot(data=plot_lab, aes(x=RESULT_VALUE_NUM)) + 
-    #      geom_density( fill="#1B9E77")  +
-     #     theme_minimal() + xlab("Result Value")
-    #pg <- ggplot_build(p)
-    #grid::grid.draw(ggplot_gtable(plot_lab))
-   #bp <- ggplot(data=plot_lab, aes(x=RESULT_VALUE_NUM)) + 
-    #      geom_boxplot() + geom_point(color="#1B9E77")
+
     nobs <- nrow(plot_lab[!is.na(plot_lab$RESULT_VALUE_NUM),])
     nppl <- "N"
     m <- median(plot_lab$RESULT_VALUE_NUM, na.rm = TRUE)
@@ -207,7 +193,6 @@ server <- function(input, output) {
   })
   
   output$table <- renderDataTable({datatable(cat[cat$SUBJ_GROUP==input$select, 1:2])})
-  #https://orchid00.github.io/tidy_raincloudplot
 }
 
 shinyApp(ui, server)
