@@ -174,8 +174,6 @@ server <- function(input, output) {
 
     } else {
       plot_lab <- lab[lab$DATASET==input$select_lab,]
-      #load("PMBB_labs")
-      #plot_lab <- pmbblabs
     }
 
     nobs <- nrow(plot_lab[!is.na(plot_lab$RESULT_VALUE_NUM),])
