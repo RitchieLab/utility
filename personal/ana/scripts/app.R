@@ -118,7 +118,7 @@ server <- function(input, output) {
     ggplot(data=plot_age, aes(x=AGE, color=GENDER_CODE)) + geom_density() + theme_minimal() + 
       scale_color_brewer(name='Gender', palette = "Dark2") + xlab("Patient Age (Years)") +
       theme(panel.background = element_rect(fill = "#343E48",color="#ffffff"), 
-            plot.background = element_rect(fill = "#343E48", color = NA,),
+            plot.background = element_rect(fill = "#343E48", color = NA),
             axis.text = element_text(color="#FFFFFF"),
             axis.title = element_text(color="#ffffff"),
             legend.text = element_text(color="#ffffff"),
@@ -188,7 +188,7 @@ server <- function(input, output) {
       geom_bar(stat="identity") + theme_minimal() + 
       scale_fill_brewer(palette="Dark2") + coord_flip() +
       theme(panel.background = element_rect(fill = "#343E48",color="#ffffff"), 
-            plot.background = element_rect(fill = "#343E48", color = NA,),
+            plot.background = element_rect(fill = "#343E48", color = NA),
             axis.text = element_text(color="#FFFFFF"),
             axis.title = element_text(color="#ffffff"),
             legend.text = element_text(color="#ffffff"),
@@ -216,7 +216,7 @@ server <- function(input, output) {
       ylab("Result Value") +
       labs(subtitle=paste0("N Obs. = ", nobs, ", N Patients = ", nppl, ", Median = ", signif(m, digits=3))) + 
       theme(panel.background = element_rect(fill = "#343E48",color="#ffffff"), 
-            plot.background = element_rect(fill = "#343E48", color = NA,),
+            plot.background = element_rect(fill = "#343E48", color = NA),
             axis.text = element_text(color="#FFFFFF"),
             axis.title = element_text(color="#ffffff"),
             plot.subtitle = element_text(color="#ffffff"),
