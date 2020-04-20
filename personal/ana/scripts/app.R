@@ -8,6 +8,7 @@ library(ggiraph)
 library(ggforce)
 library(ggrepel)
 library(dashboardthemes)
+library(grid)
 
 age = read.delim("PMBB_AGE_SEX.txt", stringsAsFactors = FALSE)
 age$AGE <- as.numeric(age$AGE)
@@ -27,7 +28,7 @@ ui <- dashboardPage(
   dashboardSidebar(disable = TRUE),
   dashboardBody(
     shinyDashboardThemes(
-      theme = "grey_dark"
+      theme = "purple_gradient"
     ),
     # Boxes need to be put in a row (or column)
     fluidPage(
@@ -117,8 +118,8 @@ server <- function(input, output) {
     }
     ggplot(data=plot_age, aes(x=AGE, color=GENDER_CODE)) + geom_density() + theme_minimal() + 
       scale_color_brewer(name='Gender', palette = "Dark2") + xlab("Patient Age (Years)") +
-      theme(panel.background = element_rect(fill = "#343E48",color="#ffffff"), 
-            plot.background = element_rect(fill = "#343E48", color = NA),
+      theme(panel.background = element_rect(fill = "#414f81",color="#ffffff"), 
+            plot.background = element_rect(fill = "#414f81", color = NA),
             axis.text = element_text(color="#FFFFFF"),
             axis.title = element_text(color="#ffffff"),
             legend.text = element_text(color="#ffffff"),
@@ -152,25 +153,48 @@ server <- function(input, output) {
                          name = "", breaks = NULL, labels = NULL) +
       scale_y_continuous(limits = c(-1, 1.2),      # Adjust so labels are not cut off
                          name = "", breaks = NULL, labels = NULL) +
-      theme(legend.position = "none", panel.background = element_blank()) +
+      theme(legend.position = "none") +
       scale_fill_brewer(palette="Dark2") +
-      theme(panel.background = element_rect(fill = "#343E48", color="#ffffff"), 
-            plot.background = element_rect(fill = "#343E48", color = NA))
+      theme(panel.background = element_rect(fill = "#464b7d", color="#ffffff"), 
+            plot.background = element_rect(fill = "#464b7d", color = "#343E48"))
+     #grob <- ggplotGrob(plot_eth)
+  #  grid.newpage()
 
+   # grid.draw(grob, )
+    
+    
   })
   
+  output$table <- renderDataTable(
+    datatable(cat[cat$SUBJ_GROUP==input$select, 1:2]),
+    selection = list(mode = 'single', server=TRUE)
+    )
+  
   output$plot3 <- renderPlot({
+    if (length(input$table_rows_selected)){
+      print(paste0("this",as.character(input$table_rows_selected)))
+      j <- as.integer(as.character(input$table_rows_selected))
+      print(j)
+      i <- cat[cat$SUBJ_GROUP==input$select, 1][j]
+      print(i)
+      plot_tti <- tti[tti$SUBJ_GROUP==input$select & tti$CATEGORY==i,] %>% 
+        ungroup() %>% 
+        arrange(GENDER,N) %>% 
+        mutate(.r=row_number())
+    } else {
+      
     plot_tti <- tti[tti$SUBJ_GROUP==input$select,] %>% 
       ungroup() %>% 
       arrange(GENDER,N) %>% 
       mutate(.r=row_number())
+    }
     ggplot(data=plot_tti, aes(x=.r, y=N, fill=CATEGORY, tooltip=N)) + geom_bar(stat="identity") + 
       theme_minimal() + scale_fill_brewer(palette="Dark2") + 
       theme(axis.text.x = element_text(angle=45)) + facet_wrap(.~GENDER, scales = "free_y") +
       xlab("Code (Mapped to ICD-9)") + ylab("Number of Patients") +
       scale_x_continuous(breaks = plot_tti$.r, labels=plot_tti$MAPPED_CODE) + coord_flip() +
-      theme(panel.background = element_rect(fill = "#343E48", color="#ffffff"), 
-            plot.background = element_rect(fill = "#343E48", color = NA),
+      theme(panel.background = element_rect(fill = "#464b7d", color="#ffffff"), 
+            plot.background = element_rect(fill = "#464b7d", color = NA),
             axis.text = element_text(color="#FFFFFF"),
             axis.title = element_text(color="#ffffff"),
             legend.text = element_text(color="#ffffff"),
@@ -215,8 +239,8 @@ server <- function(input, output) {
       theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.title.y = element_blank(), panel.background = element_blank()) + 
       ylab("Result Value") +
       labs(subtitle=paste0("N Obs. = ", nobs, ", N Patients = ", nppl, ", Median = ", signif(m, digits=3))) + 
-      theme(panel.background = element_rect(fill = "#343E48",color="#ffffff"), 
-            plot.background = element_rect(fill = "#343E48", color = NA),
+      theme(panel.background = element_rect(fill = "#464b7d",color="#ffffff"), 
+            plot.background = element_rect(fill = "#464b7d", color = NA),
             axis.text = element_text(color="#FFFFFF"),
             axis.title = element_text(color="#ffffff"),
             plot.subtitle = element_text(color="#ffffff"),
@@ -226,7 +250,6 @@ server <- function(input, output) {
     
   })
   
-  output$table <- renderDataTable({datatable(cat[cat$SUBJ_GROUP==input$select, 1:2])})
 }
 
 shinyApp(ui, server)
