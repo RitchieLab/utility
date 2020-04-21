@@ -7,8 +7,8 @@ library(dplyr)
 library(ggiraph)
 library(ggforce)
 library(ggrepel)
-library(dashboardthemes)
 library(grid)
+source("dashboardtheme.R")
 
 age = read.delim("PMBB_AGE_SEX.txt", stringsAsFactors = FALSE)
 age$AGE <- as.numeric(age$AGE)
@@ -28,7 +28,7 @@ ui <- dashboardPage(
   dashboardSidebar(disable = TRUE),
   dashboardBody(
     shinyDashboardThemes(
-      theme = "purple_gradient"
+      theme = "pmbb_gradient"
     ),
     # Boxes need to be put in a row (or column)
     fluidPage(
@@ -118,13 +118,15 @@ server <- function(input, output) {
     }
     ggplot(data=plot_age, aes(x=AGE, color=GENDER_CODE)) + geom_density() + theme_minimal() + 
       scale_color_brewer(name='Gender', palette = "Dark2") + xlab("Patient Age (Years)") +
-      theme(panel.background = element_rect(fill = "#414f81",color="#ffffff"), 
-            plot.background = element_rect(fill = "#414f81", color = NA),
-            axis.text = element_text(color="#FFFFFF"),
-            axis.title = element_text(color="#ffffff"),
-            legend.text = element_text(color="#ffffff"),
-            legend.title = element_text(color="#ffffff"),
-            panel.grid = element_line(color="#303030", size = 0.3))
+      theme(
+            panel.background = element_rect(fill = "#f2f2f3",color="#f2f2f3"), 
+            plot.background = element_rect(fill = "#f2f2f3", color = NA),
+            axis.text = element_text(color="#000f3a"),
+            axis.title = element_text(color="#000f3a"),
+            legend.text = element_text(color="#000f3a"),
+            legend.title = element_text(color="#000f3a"),
+            panel.grid = element_line(color="#cfd0d2", size = 0.3)
+      )
     
   })
   
@@ -147,7 +149,7 @@ server <- function(input, output) {
       geom_arc_bar(aes(x0 = 0, y0 = 0, r0 = 0, r = 1,
                        start = start, end = end, fill = factor(RACE_CODE, levels=rev(levs))), color="white") +
       geom_text_repel(aes(x = 1.05 * sin(middle), y = 1.05 * cos(middle), label = Label,
-                          hjust = hjust, vjust = vjust), color="#ffffff") +
+                          hjust = hjust, vjust = vjust), color="#000f3a") +
       coord_fixed() +
       scale_x_continuous(limits = c(-1.3, 1.4),  # Adjust so labels are not cut off
                          name = "", breaks = NULL, labels = NULL) +
@@ -155,8 +157,8 @@ server <- function(input, output) {
                          name = "", breaks = NULL, labels = NULL) +
       theme(legend.position = "none") +
       scale_fill_brewer(palette="Dark2") +
-      theme(panel.background = element_rect(fill = "#464b7d", color="#ffffff"), 
-            plot.background = element_rect(fill = "#464b7d", color = "#343E48"))
+      theme(panel.background = element_rect(fill = "#ffffff", color="#ffffff"), 
+            plot.background = element_rect(fill = "#ffffff", color = "#ffffff"))
      #grob <- ggplotGrob(plot_eth)
   #  grid.newpage()
 
@@ -193,14 +195,14 @@ server <- function(input, output) {
       theme(axis.text.x = element_text(angle=45)) + facet_wrap(.~GENDER, scales = "free_y") +
       xlab("Code (Mapped to ICD-9)") + ylab("Number of Patients") +
       scale_x_continuous(breaks = plot_tti$.r, labels=plot_tti$MAPPED_CODE) + coord_flip() +
-      theme(panel.background = element_rect(fill = "#464b7d", color="#ffffff"), 
-            plot.background = element_rect(fill = "#464b7d", color = NA),
-            axis.text = element_text(color="#FFFFFF"),
-            axis.title = element_text(color="#ffffff"),
-            legend.text = element_text(color="#ffffff"),
-            legend.title = element_text(color="#ffffff"),
-            strip.text = element_text(colour = 'white'),
-            panel.grid = element_line(color="#303030", size = 0.3))
+      theme(panel.background = element_rect(fill = "#f2f2f3", color="#f2f2f3"), 
+            plot.background = element_rect(fill = "#f2f2f3", color = NA),
+            axis.text = element_text(color="#000f3a"),
+            axis.title = element_text(color="#000f3a"),
+            legend.text = element_text(color="#000f3a"),
+            legend.title = element_text(color="#000f3a"),
+            strip.text = element_text(colour = '#000f3a'),
+            panel.grid = element_line(color="#cfd0d2", size = 0.3))
     #girafe(ggobj=p,   options = list(
     # opts_sizing(rescale = FALSE) ))
   })
@@ -211,13 +213,14 @@ server <- function(input, output) {
     ggplot(data=plot_rec, aes(x=DEPARTMENT, y=N, fill=DEPARTMENT)) +
       geom_bar(stat="identity") + theme_minimal() + 
       scale_fill_brewer(palette="Dark2") + coord_flip() +
-      theme(panel.background = element_rect(fill = "#343E48",color="#ffffff"), 
-            plot.background = element_rect(fill = "#343E48", color = NA),
-            axis.text = element_text(color="#FFFFFF"),
-            axis.title = element_text(color="#ffffff"),
-            legend.text = element_text(color="#ffffff"),
-            legend.title = element_text(color="#ffffff"),
-            panel.grid = element_line(color="#303030", size = 0.3))
+      theme(panel.background = element_rect(fill = "#f2f2f3",color="#f2f2f3"), 
+            plot.background = element_rect(fill = "#f2f2f3", color = NA),
+            axis.text = element_text(color="#000f3a"),
+            axis.title = element_text(color="#000f3a"),
+            legend.text = element_text(color="#000f3a"),
+            legend.title = element_text(color="#000f3a"),
+            panel.grid = element_line(color="#cfd0d2", size = 0.3)) +
+      guides(fill="none")
   })
   
   output$plot5 <- renderPlot({
@@ -233,20 +236,20 @@ server <- function(input, output) {
     m <- median(plot_lab$RESULT_VALUE_NUM, na.rm = TRUE)
     
     ggplot(data=plot_lab) + 
-      geom_boxplot(aes(y=RESULT_VALUE_NUM, x=1.25), width=0.25, color="white", fill=NA) +
-      geom_jitter(aes(y=RESULT_VALUE_NUM, x=1), color="#1B9E77", position=position_jitter(width = 0.10, height=0), size=0.15, alpha=0.3) + 
+      geom_boxplot(aes(y=RESULT_VALUE_NUM, x=1.25), width=0.25, color="#1B9E77", fill=NA) +
+      geom_jitter(aes(y=RESULT_VALUE_NUM, x=1), color="#1B9E77", position=position_jitter(width = 0.10, height=0), size=0.25, alpha=0.3) + 
       xlim(0.9,1.4) + coord_flip() + theme_minimal() + 
       theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.title.y = element_blank(), panel.background = element_blank()) + 
       ylab("Result Value") +
       labs(subtitle=paste0("N Obs. = ", nobs, ", N Patients = ", nppl, ", Median = ", signif(m, digits=3))) + 
-      theme(panel.background = element_rect(fill = "#464b7d",color="#ffffff"), 
-            plot.background = element_rect(fill = "#464b7d", color = NA),
-            axis.text = element_text(color="#FFFFFF"),
-            axis.title = element_text(color="#ffffff"),
-            plot.subtitle = element_text(color="#ffffff"),
-            legend.text = element_text(color="#ffffff"),
-            legend.title = element_text(color="#ffffff"),
-            panel.grid = element_line(color="#303030", size = 0.3))
+      theme(panel.background = element_rect(fill = "#f2f2f3",color="#f2f2f3"), 
+            plot.background = element_rect(fill = "#f2f2f3", color = NA),
+            axis.text = element_text(color="#000f3a"),
+            axis.title = element_text(color="#000f3a"),
+            plot.subtitle = element_text(color="#000f3a"),
+            legend.text = element_text(color="#000f3a"),
+            legend.title = element_text(color="#000f3a"),
+            panel.grid = element_line(color="#cfd0d2", size = 0.3))
     
   })
   
