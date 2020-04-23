@@ -288,9 +288,9 @@ shinyDashboardLogoDIY <- function(boldText, mainText, textSize = 15, badgeText, 
 #' @export
 shinyDashboardLogo <- function(theme){
   
-  if(theme == "pmbb_gradient"){
-  
-    return(logo_pmbb_gradient)
+  if(theme == "pmbb"){
+    
+    return(logo_pmbb)
     
   } else{
     
@@ -526,7 +526,7 @@ shinyDashboardThemeDIY <- function(
   boxShadowSize, boxShadowColor, boxTitleSize, boxDefaultColor, boxPrimaryColor, boxSuccessColor, boxWarningColor,
   boxDangerColor, tabBoxTabColor, tabBoxTabTextSize, tabBoxTabTextColor, tabBoxTabTextColorSelected, tabBoxBackColor,
   tabBoxHighlightColor, tabBoxBorderRadius, buttonBackColor, buttonTextColor, buttonBorderColor, buttonBorderRadius,
-  buttonBackColorHover, tableHoverColor, tableFontColor, buttonTextColorHover, buttonBorderColorHover, buttonHeight = 34, buttonPadding = "6px 12px",
+  buttonBackColorHover, buttonTextColorHover, buttonBorderColorHover, buttonHeight = 34, buttonPadding = "6px 12px",
   textboxBackColor, textboxBorderColor, textboxBorderRadius, textboxBackColorSelect, textboxBorderColorSelect,
   textboxHeight = 34, textboxPadding = "6px 12px", tableBackColor, tableBorderColor,
   tableBorderTopSize, tableBorderRowSize, primaryFontColor = "auto", successFontColor = "auto",
@@ -937,10 +937,10 @@ shinyDashboardThemeDIY <- function(
           }
           /* datatable: hover row */
           table.dataTable tr.hover td, table.dataTable td.hover {
-          background-color: ', tableHoverColor, ' !important;
+          background-color: ', tableBorderColor, ' !important;
           }
           table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
-          background-color: ', tableHoverColor, ' !important;
+          background-color: ', tableBorderColor, ' !important;
           }
           table.dataTable.row-border tbody th, table.dataTable.row-border tbody td,
           table.dataTable.display tbody th, table.dataTable.display tbody td {
@@ -948,27 +948,27 @@ shinyDashboardThemeDIY <- function(
           }
           /* datatable: stripe row */
           table.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd {
-          background-color: ', tableBackColor, ' !important;
+          background-color: ', tableBorderColor, ' !important;
           }
           /* datatable: page control */
           .dataTables_wrapper .dataTables_paginate .paginate_button {
-          color: ', tableFontColor, ' !important;
+          color: ', appFontColor, ' !important;
           }
           /* datatable: table info */
           .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
           .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover,
           .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:active {
-          color: ', tableFontColor, ' !important;
+          color: ', appFontColor, ' !important;
           }
           .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter,
           .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing,
           .dataTables_wrapper .dataTables_paginate {
-          color: ', tableFontColor, ' !important;
+          color: ', appFontColor, ' !important;
           }
           .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter,
           .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing,
           .dataTables_wrapper .dataTables_paginate {
-          color: ', tableFontColor, ' !important;
+          color: ', appFontColor, ' !important;
           }
           /* datatable search box */
           .dataTables_wrapper .dataTables_filter input {
@@ -1051,9 +1051,9 @@ shinyDashboardThemeDIY <- function(
 #' @export
 shinyDashboardThemes <- function(theme){
   
-  if(theme == "pmbb_gradient"){
+  if(theme == "pmbb"){
     
-    return(theme_pmbb_gradient)
+    return(theme_pmbb)
     
   } else{
     
@@ -1066,184 +1066,148 @@ shinyDashboardThemes <- function(theme){
 
 ### Logos -------------------------------------------------------------------
 
-### logo_purple_gradient ----------------------------------------------------
+### logo_blue_gradient ------------------------------------------------------
 #' @export
-logo_pmbb_gradient <- shinyDashboardLogoDIY(
+logo_pmbb <- shinyDashboardLogoDIY(
   
   boldText = "SD"
   ,mainText = "Themes"
   ,textSize = 16
   ,badgeText = "BETA"
-  ,badgeTextColor = "#31386b"
+  ,badgeTextColor = "white"
   ,badgeTextSize = 2
-  ,badgeBackColor = "rgb(255,255,255)"
+  ,badgeBackColor = "#40E0D0"
   ,badgeBorderRadius = 3
   
 )
 
-
 ### Themes ------------------------------------------------------------------
 
-### theme_purple_gradient ---------------------------------------------------
+### theme_blue_gradient -----------------------------------------------------
 #' @export
-theme_pmbb_gradient <- shinyDashboardThemeDIY(
+theme_pmbb <- shinyDashboardThemeDIY(
   
   ### general
   appFontFamily = "Arial"
-  ,appFontColor = "rgb(0,15,58)"
+  ,appFontColor = "rgb(0,0,0)"
   ,primaryFontColor = "rgb(255,255,255)"
-  ,infoFontColor = "rgb(255,255,255)"
-  ,successFontColor = "rgb(255,255,255)"
+  ,infoFontColor = "rgb(0,0,0)"
+  ,successFontColor = "rgb(0,0,0)"
   ,warningFontColor = "rgb(255,255,255)"
-  ,dangerFontColor = "rgb(255,255,255)"
-  ,bodyBackColor = cssGradientThreeColors(
-    direction = "down"
-    ,colorStart = "rgb(242,242,243)"
-    ,colorMiddle = "rgb(249,249,249)"
-    ,colorEnd = "rgb(255,255,255)"
-    ,colorStartPos = 0
-    ,colorMiddlePos = 70
-    ,colorEndPos = 100
-  )
+  ,dangerFontColor = "rgb(0,0,0)"
+  ,bodyBackColor = "rgb(242,242,243)"
   
   ### header
-  ,logoBackColor = "rgb(0,20,77)"
+  ,logoBackColor = "rgb(0,15,58)"
   
-  ,headerButtonBackColor = "rgb(49,56,107)"
-  ,headerButtonIconColor = "rgb(62,133,179)"
-  ,headerButtonBackColorHover = "rgb(49,56,107)"
-  ,headerButtonIconColorHover = "rgb(255,255,255)"
+  ,headerButtonBackColor = "rgb(238,238,238)"
+  ,headerButtonIconColor = "rgb(75,75,75)"
+  ,headerButtonBackColorHover = "rgb(210,210,210)"
+  ,headerButtonIconColorHover = "rgb(0,0,0)"
   
-  ,headerBackColor = "rgb(0,20,77)"
-  ,headerBoxShadowColor = ""
-  ,headerBoxShadowSize = "0px 0px 0px"
+  ,headerBackColor = "rgb(0,15,58)"
+  ,headerBoxShadowColor = "#aaaaaa"
+  ,headerBoxShadowSize = "2px 2px 2px"
   
   ### sidebar
   ,sidebarBackColor = cssGradientThreeColors(
     direction = "down"
-    ,colorStart = "rgb(49,56,107)"
-    ,colorMiddle = "rgb(71,59,109)"
-    ,colorEnd = "rgb(78,88,149)"
+    ,colorStart = "rgb(20,97,117)"
+    ,colorMiddle = "rgb(56,161,187)"
+    ,colorEnd = "rgb(3,22,56)"
     ,colorStartPos = 0
-    ,colorMiddlePos = 70
+    ,colorMiddlePos = 50
     ,colorEndPos = 100
   )
+  ,sidebarPadding = 0
   
-  ,sidebarShadowRadius = ""
-  ,sidebarPadding = 10
-  ,sidebarShadowColor = "0px 0px 0px"
+  ,sidebarMenuBackColor = "transparent"
+  ,sidebarMenuPadding = 0
+  ,sidebarMenuBorderRadius = 0
   
-  ,sidebarMenuBackColor = cssGradientThreeColors(
+  ,sidebarShadowRadius = "3px 5px 5px"
+  ,sidebarShadowColor = "#aaaaaa"
+  
+  ,sidebarUserTextColor = "rgb(255,255,255)"
+  
+  ,sidebarSearchBackColor = "rgb(55,72,80)"
+  ,sidebarSearchIconColor = "rgb(153,153,153)"
+  ,sidebarSearchBorderColor = "rgb(55,72,80)"
+  
+  ,sidebarTabTextColor = "rgb(255,255,255)"
+  ,sidebarTabTextSize = 13
+  ,sidebarTabBorderStyle = "none none solid none"
+  ,sidebarTabBorderColor = "rgb(35,106,135)"
+  ,sidebarTabBorderWidth = 1
+  
+  ,sidebarTabBackColorSelected = cssGradientThreeColors(
     direction = "right"
-    ,colorStart = "rgb(48,103,157)"
-    ,colorMiddle = "rgb(65,79,129)"
-    ,colorEnd = "rgb(55,70,120)"
+    ,colorStart = "rgba(44,222,235,1)"
+    ,colorMiddle = "rgba(44,222,235,1)"
+    ,colorEnd = "rgba(0,255,213,1)"
     ,colorStartPos = 0
     ,colorMiddlePos = 30
     ,colorEndPos = 100
   )
-  ,sidebarMenuPadding = 5
-  ,sidebarMenuBorderRadius = 20
-  
-  ,sidebarUserTextColor = "rgb(128,177,221)"
-  
-  ,sidebarSearchBackColor = "rgb(40,70,115)"
-  ,sidebarSearchIconColor = "rgb(50,115,145)"
-  ,sidebarSearchBorderColor = "rgb(30,60,105)"
-  
-  ,sidebarTabTextColor = "rgb(128,177,221)"
-  ,sidebarTabTextSize = 13
-  ,sidebarTabBorderStyle = "none"
-  ,sidebarTabBorderColor = "none"
-  ,sidebarTabBorderWidth = 0
-  
-  ,sidebarTabBackColorSelected = cssGradientThreeColors(
-    direction = "right"
-    ,colorStart = "rgb(56,137,189)"
-    ,colorMiddle = "rgb(65,95,145)"
-    ,colorEnd = "rgb(68,84,137)"
-    ,colorStartPos = 0
-    ,colorMiddlePos = 50
-    ,colorEndPos = 100
-  )
-  ,sidebarTabTextColorSelected = "rgb(255,255,255)"
-  ,sidebarTabRadiusSelected = "30px"
+  ,sidebarTabTextColorSelected = "rgb(0,0,0)"
+  ,sidebarTabRadiusSelected = "0px 20px 20px 0px"
   
   ,sidebarTabBackColorHover = cssGradientThreeColors(
     direction = "right"
-    ,colorStart = "rgb(56,137,189)"
-    ,colorMiddle = "rgb(65,95,145)"
-    ,colorEnd = "rgb(68,84,137)"
+    ,colorStart = "rgba(44,222,235,1)"
+    ,colorMiddle = "rgba(44,222,235,1)"
+    ,colorEnd = "rgba(0,255,213,1)"
     ,colorStartPos = 0
-    ,colorMiddlePos = 50
+    ,colorMiddlePos = 30
     ,colorEndPos = 100
   )
-  ,sidebarTabTextColorHover = "rgb(255,255,255)"
-  ,sidebarTabBorderStyleHover = "none"
-  ,sidebarTabBorderColorHover = "none"
-  ,sidebarTabBorderWidthHover = 0
-  ,sidebarTabRadiusHover = "30px"
+  ,sidebarTabTextColorHover = "rgb(50,50,50)"
+  ,sidebarTabBorderStyleHover = "none none solid none"
+  ,sidebarTabBorderColorHover = "rgb(75,126,151)"
+  ,sidebarTabBorderWidthHover = 1
+  ,sidebarTabRadiusHover = "0px 20px 20px 0px"
   
   ### boxes
-  ,boxBackColor = cssGradientThreeColors(
-    direction = "right"
-    ,colorStart = "rgb(0,15,58)"
-    ,colorMiddle = "rgb(0,20,77)"
-    ,colorEnd = "rgb(1,37,110)"
-    ,colorStartPos = 0
-    ,colorMiddlePos = 50
-    ,colorEndPos = 100
-  )
-  ,boxBorderRadius = 15
-  ,boxShadowSize = "0px 0px 0px"
-  ,boxShadowColor = ""
+  ,boxBackColor = "rgb(255,255,255)"
+  ,boxBorderRadius = 5
+  ,boxShadowSize = "0px 1px 1px"
+  ,boxShadowColor = "rgba(0,0,0,.1)"
   ,boxTitleSize = 16
   ,boxDefaultColor = "rgb(149,0,26)"
   ,boxPrimaryColor = "rgb(149,0,26)"
-  ,boxInfoColor = "rgb(149,0,26)"
+  ,boxInfoColor = "rgb(0,20,77)"
   ,boxSuccessColor = "rgb(64,186,170)"
   ,boxWarningColor = "rgb(149,0,26)"
   ,boxDangerColor = "rgb(249,144,144)"
   
-  ,tabBoxTabColor = "rgb(255,0,0)"
+  ,tabBoxTabColor = "rgb(255,255,255)"
   ,tabBoxTabTextSize = 14
-  ,tabBoxTabTextColor = "rgb(255,0,0)"
-  ,tabBoxTabTextColorSelected = "rgb(255,255,255)"
-  ,tabBoxBackColor = cssGradientThreeColors(
-    direction = "right"
-    ,colorStart = "rgb(0,15,58)"
-    ,colorMiddle = "rgb(0,20,77)"
-    ,colorEnd = "rgb(1,37,110)"
-    ,colorStartPos = 0
-    ,colorMiddlePos = 30
-    ,colorEndPos = 100
-  )
-  ,tabBoxHighlightColor = "rgb(255,0,0)"
-  ,tabBoxBorderRadius = 15
+  ,tabBoxTabTextColor = "rgb(0,0,0)"
+  ,tabBoxTabTextColorSelected = "rgb(0,0,0)"
+  ,tabBoxBackColor = "rgb(255,255,255)"
+  ,tabBoxHighlightColor = "rgba(44,222,235,1)"
+  ,tabBoxBorderRadius = 5
   
   ### inputs
-  ,buttonBackColor = "rgb(255,0,0)"
-  ,buttonTextColor = "rgb(40,63,106)"
-  ,buttonBorderColor = "rgb(72,190,229)"
-  ,buttonBorderRadius = 20
+  ,buttonBackColor = "rgb(245,245,245)"
+  ,buttonTextColor = "rgb0,0,0)"
+  ,buttonBorderColor = "rgb(200,200,200)"
+  ,buttonBorderRadius = 5
   
-  ,buttonBackColorHover = "rgb(130,175,211)"
-  ,buttonTextColorHover = "rgb(255,255,255)"
-  ,buttonBorderColorHover = "rgb(255,0,0)"
+  ,buttonBackColorHover = "rgb(235,235,235)"
+  ,buttonTextColorHover = "rgb(100,100,100)"
+  ,buttonBorderColorHover = "rgb(200,200,200)"
   
   ,textboxBackColor = "rgb(255,255,255)"
-  ,textboxBorderColor = "rgb(68,70,75)"
-  ,textboxBorderRadius = 20
-  ,textboxBackColorSelect = "rgb(255,0,0)"
-  ,textboxBorderColorSelect = "rgb(108,111,118)"
+  ,textboxBorderColor = "rgb(200,200,200)"
+  ,textboxBorderRadius = 5
+  ,textboxBackColorSelect = "rgb(245,245,245)"
+  ,textboxBorderColorSelect = "rgb(200,200,200)"
   
   ### tables
-  ,tableBackColor = "rgb(242,242,243)"
-  ,tableBorderColor = "rgb(0,15,58)"
-  ,tableHoverColor = "rgb(130,175,211)"
+  ,tableBackColor = "rgb(255,255,255)"
+  ,tableBorderColor = "rgb(240,240,240)"
   ,tableBorderTopSize = 1
   ,tableBorderRowSize = 1
-  ,tableFontColor = "rgb(255,255,255)"
-  
   
 )
