@@ -5,6 +5,8 @@
 library(shiny)
 library(shinydashboard)
 library(ggplot2)
+#library(DT)
+#library(data.table)
 library(dplyr)
 library(ggiraph)
 library(ggforce)
@@ -20,7 +22,16 @@ demo <- read.delim("PMBB_DEMO.txt", stringsAsFactors = FALSE)
 demo$PT_ID <- as.character(demo$PT_ID)
 icd <- as.data.frame(data.table::fread("PMBB_ICD9_map_with_category.txt", stringsAsFactors = FALSE))
 icd$PT_ID <- as.character(icd$PT_ID)
-nicd <- read.delim("PMBB_ICD_N.txt", stringsAsFactors = FALSE)
+#icd$DIG4 <- ifelse(nchar(icd$GEM_ICD9)==6, substr(icd$GEM_ICD9, 1, nchar(icd$GEM_ICD9)-1), ifelse(nchar(icd$GEM_ICD9)==5, icd$GEM_ICD9, NA) )
+#icd$DIG3 <- gsub("\\..*","",icd$GEM_ICD9)
+#Split into 3 df
+#rollup <- rbind(raw[!is.na(raw$Code),], dig3[!is.na(dig3$Code),], dig4[!is.na(dig4$Code),])
+#npmbb <- unique(rollup[, c(-1, -3)]) %>% group_by(Code, Rollup) %>% tally()
+#ngeno <- unique(rollup[rollup$SUBJ_GROUP=="Genotyped", c(-1, -3)]) %>% group_by(Code, Rollup) %>% tally()
+#npmbb$SUBJ_GROUP <- "PMBB"
+#ngeno$SUBJ_GROUP <- "Genotyped"
+#write.table(rbind(npmbb, ngeno), file="PMBB_ICD9_map_with_category_with_rollup.txt", sep="\t", row.names = FALSE, quote = FALSE)
+nicd <- read.delim("PMBB_ICD9_N_with_rollup.txt", stringsAsFactors = FALSE)
 lab <- as.data.frame(data.table::fread("LABS_STD_SUMMARY_SUBJ.txt"))
 lab$PT_ID <- as.character(lab$PT_ID)
 lab$RESULT_VALUE <- as.numeric(lab$RESULT_VALUE)
@@ -29,8 +40,8 @@ m <- c("MEDIAN", "MAX", "MIN")
 names(l) <- unique(lab$Lab)
 rec <- read.delim("pmbb_recruitment_location.txt")
 rec$PT_ID <- as.character(rec$PT_ID)
-i <- c("All", sort(unique(nicd$Code[nicd$n>5 & nicd$Group=="Genotyped"])))
-names(i) <- c("All", sort(unique(nicd$Code[nicd$n>5 & nicd$Group=="Genotyped"])))
+i <- c("All", sort(unique(nicd$Code[nicd$n>5 & nicd$Group=="Genotyped" & nicd$Rollup=="Exact Match"])))
+names(i) <- c("All", sort(unique(nicd$Code[nicd$n>5 & nicd$Group=="Genotyped" & nicd$Rollup=="Exact Match"])))
 
 ###UI
 ui <- dashboardPage(
@@ -40,6 +51,7 @@ ui <- dashboardPage(
     shinyDashboardThemes(
       theme = "pmbb"
     ),
+    # Boxes need to be put in a row (or column)
     fluidPage(
         fluidRow(
           column(width=4,
@@ -107,7 +119,8 @@ ui <- dashboardPage(
                )
         )
       ),
-
+        
+ #end row2
       fluidRow(
         column(width=8,
                box(
@@ -222,17 +235,26 @@ server <- function(input, output) {
                    Patients=c(formatC(length(unique(icd$PT_ID)), big.mark = ","), formatC(length(unique(icd$PT_ID[icd$SUBJ_GROUP=="Genotyped"])), big.mark=",")))
      } else { 
        if(nchar(as.character(input$selecticd))==6){
-         tab_nicd <- nicd[which(nicd$Code==input$selecticd | nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-1) | nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-3)), ]
+         tab_nicd <- rbind( nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match") , ],
+                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-1) & nicd$Rollup=="4-digit"),],
+                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-3) & nicd$Rollup=="3-digit"),]
+         )
        } else {
          if(nchar(as.character(input$selecticd))==5){
-           tab_nicd <- nicd[which(nicd$Code==input$selecticd | nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-2)) , ]
+           tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match"), ],
+                             nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="4-digit"), ],
+                             nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-2) & nicd$Rollup=="3-digit"), ]
+
+           )
          } else {
-             tab_nicd <- nicd[which(nicd$Code==input$selecticd), ]
+             tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match"), ],
+                               nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="3-digit"), ]
+             )
+             
            }
        }
        tab_nicd$Patients <- formatC(tab_nicd$n, big.mark=",")
-       tab_nicd$Rollup <- paste0(nchar(gsub("\\.", "", tab_nicd$Code)), "-digit")
-       tab_nicd[, c(1,5,4,3)]
+       tab_nicd[, c(1,2,5,4)]
      } 
   )
 
@@ -289,6 +311,8 @@ server <- function(input, output) {
             strip.text = element_text(colour = '#000000'),
             panel.grid = element_line(color="#cfd0d2", size = 0.3)) +
       scale_y_continuous(labels = comma)
+    #girafe(ggobj=p,   options = list(
+    # opts_sizing(rescale = FALSE) ))
   })
   
   ###RECRUITMENT
