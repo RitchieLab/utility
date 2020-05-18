@@ -5,6 +5,8 @@
 library(shiny)
 library(shinydashboard)
 library(ggplot2)
+#library(DT)
+#library(data.table)
 library(dplyr)
 library(ggiraph)
 library(ggforce)
@@ -20,17 +22,6 @@ demo <- read.delim("PMBB_DEMO.txt", stringsAsFactors = FALSE)
 demo$PT_ID <- as.character(demo$PT_ID)
 icd <- as.data.frame(data.table::fread("PMBB_ICD9_map_with_category_with_desc.txt", stringsAsFactors = FALSE, quote=""))
 icd$PT_ID <- as.character(icd$PT_ID)
-#icd$DIG4 <- ifelse(nchar(icd$GEM_ICD9)==6, substr(icd$GEM_ICD9, 1, nchar(icd$GEM_ICD9)-1), ifelse(nchar(icd$GEM_ICD9)==5, icd$GEM_ICD9, NA) )
-#icd$DIG3 <- gsub("\\..*","",icd$GEM_ICD9)
-#Split into 3 df
-#rollup <- rbind(raw[!is.na(raw$Code),], dig3[!is.na(dig3$Code),], dig4[!is.na(dig4$Code),])
-#npmbb <- unique(rollup[, c(-1, -3)]) %>% group_by(Code, Rollup) %>% tally()
-#ngeno <- unique(rollup[rollup$SUBJ_GROUP=="Genotyped", c(-1, -3)]) %>% group_by(Code, Rollup) %>% tally()
-#npmbb$SUBJ_GROUP <- "PMBB"
-#ngeno$SUBJ_GROUP <- "Genotyped"
-#write.table(rbind(npmbb, ngeno), file="PMBB_ICD9_map_with_category_with_rollup.txt", sep="\t", row.names = FALSE, quote = FALSE)
-#con <- unique(icd[, c(1,5)])
-#nicdmap <- merge(nicd, con, by.x = "Code", by.y = "GEM_ICD9", all.x = TRUE)
 nicd <- read.delim("PMBB_ICD9_N_with_rollup_with_desc.txt", stringsAsFactors = FALSE)
 lab <- as.data.frame(data.table::fread("LABS_STD_SUMMARY_SUBJ.txt"))
 lab$PT_ID <- as.character(lab$PT_ID)
@@ -41,8 +32,7 @@ names(l) <- sort(unique(lab$Lab))
 rec <- read.delim("pmbb_recruitment_location.txt")
 rec$PT_ID <- as.character(rec$PT_ID)
 cl <- c("All", sort(unique(nicd$Desc[nicd$n>5 & nicd$Group=="Genotyped" & nicd$Rollup=="Exact Match"])))
-#names(i) <- c("All", sort(unique(icd$Desc[icd$n>5 & icd$Group=="Genotyped" & icd$Rollup=="Exact Match"])))
-i <- unlist(lapply(strsplit(i, " "), FUN=`[[`, 1))
+i <- unlist(lapply(strsplit(cl, " "), FUN=`[[`, 1))
 names(i) <- cl
 
 ###UI
@@ -188,6 +178,7 @@ server <- function(input, output) {
         axis.title = element_text(color="#000000"),
         legend.text = element_text(color="#000000"),
         legend.title = element_text(color="#000000"),
+        text=element_text(size=15),
         panel.grid = element_line(color="#cfd0d2", size = 0.3)
       )
     
@@ -221,7 +212,10 @@ server <- function(input, output) {
       theme_minimal() +
       theme(panel.background = element_rect(fill = "#ffffff", color="#ffffff"), 
             plot.background = element_rect(fill = "#ffffff", color = "#ffffff"),
-            axis.text.x = element_text(angle=45)) + 
+            axis.text.x = element_text(angle=30),
+            text=element_text(size=15),
+            axis.text = element_text(color="#000000"),
+            axis.title = element_text(color="#000000")) + 
       guides(fill="none") +
       labs(x="RACE", y="Number of Patients") +
       geom_text(aes(label=Label, x=factor(RACE, levels=rev(levs)), y=n+(max(plot_eth$n)/20)), position=position_dodge(0.9), vjust=0) +
@@ -309,8 +303,8 @@ server <- function(input, output) {
     
     ggplot(data=plot_icd, aes(x=factor(plot_icd$GEM_ICD9, levels = rev(ilevs)), y=n, fill=Category)) + geom_bar(stat="identity") + 
       theme_minimal() + scale_fill_brewer(palette="Dark2") + 
-      theme(axis.text.x = element_text(angle=45)) + #facet_wrap(.~GENDER, scales = "free_y") +
-      xlab("Code (Mapped to ICD-9)") + ylab("Number of Patients") +
+      theme(axis.text.x = element_text(angle=30)) + #facet_wrap(.~GENDER, scales = "free_y") +
+      xlab("") + ylab("Number of Patients") +
       #scale_x_continuous(breaks = plot_icd$.r, labels=plot_icd$GEM_ICD9) + 
       coord_flip() +
       theme(panel.background = element_rect(fill = "#ffffff", color="#f2f2f3"), 
@@ -320,6 +314,7 @@ server <- function(input, output) {
             legend.text = element_text(color="#000000"),
             legend.title = element_text(color="#000000"),
             strip.text = element_text(colour = '#000000'),
+            text=element_text(size=15),
             panel.grid = element_line(color="#cfd0d2", size = 0.3)) +
       scale_y_continuous(labels = comma)
     #girafe(ggobj=p,   options = list(
@@ -353,9 +348,11 @@ server <- function(input, output) {
       theme(panel.background = element_rect(fill = "#ffffff",color="#f2f2f3"), 
             plot.background = element_rect(fill = "#ffffff", color = NA),
             axis.text = element_text(color="#000000"),
+            axis.text.x = element_text(angle=30),
             axis.title = element_text(color="#000000"),
             legend.text = element_text(color="#000000"),
             legend.title = element_text(color="#000000"),
+            text=element_text(size=15),
             panel.grid = element_line(color="#cfd0d2", size = 0.3),
             axis.title.y = element_blank()) +
       guides(fill="none") +
@@ -401,6 +398,7 @@ server <- function(input, output) {
             plot.subtitle = element_text(color="#000000"),
             legend.text = element_text(color="#000000"),
             legend.title = element_text(color="#000000"),
+            text=element_text(size=15),
             panel.grid = element_line(color="#cfd0d2", size = 0.3))
     
   })
