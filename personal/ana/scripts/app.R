@@ -5,8 +5,6 @@
 library(shiny)
 library(shinydashboard)
 library(ggplot2)
-#library(DT)
-#library(data.table)
 library(dplyr)
 library(ggiraph)
 library(ggforce)
@@ -265,7 +263,7 @@ server <- function(input, output) {
 
   ###ICD COMORBIDITY  
   output$plot3 <- renderPlot({
-    
+    #Ordered Levels per Facet
     #if (length(input$table_rows_selected)){
     #  print(paste0("this",as.character(input$table_rows_selected)))
     #  j <- as.integer(as.character(input$table_rows_selected))
@@ -283,6 +281,7 @@ server <- function(input, output) {
     #    arrange(GENDER,N) %>% 
     #    mutate(.r=row_number())
     #}
+    
     if(input$select=="Genotyped"){
       if(input$selecticd=="All"){
         pre_icd <- icd[which(icd$SUBJ_GROUP==input$select),]
@@ -317,8 +316,6 @@ server <- function(input, output) {
             text=element_text(size=15),
             panel.grid = element_line(color="#cfd0d2", size = 0.3)) +
       scale_y_continuous(labels = comma)
-    #girafe(ggobj=p,   options = list(
-    # opts_sizing(rescale = FALSE) ))
   })
   
   ###RECRUITMENT
