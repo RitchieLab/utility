@@ -20,6 +20,7 @@ demo <- read.delim("PMBB_DEMO.txt", stringsAsFactors = FALSE)
 demo$PT_ID <- as.character(demo$PT_ID)
 icd <- as.data.frame(data.table::fread("PMBB_ICD9_map_with_category_with_desc.txt", stringsAsFactors = FALSE, quote=""))
 icd$PT_ID <- as.character(icd$PT_ID)
+
 nicd <- read.delim("PMBB_ICD9_N_with_rollup_with_desc.txt", stringsAsFactors = FALSE)
 lab <- as.data.frame(data.table::fread("LABS_STD_SUMMARY_SUBJ.txt"))
 lab$PT_ID <- as.character(lab$PT_ID)
@@ -30,6 +31,7 @@ names(l) <- sort(unique(lab$Lab))
 rec <- read.delim("pmbb_recruitment_location.txt")
 rec$PT_ID <- as.character(rec$PT_ID)
 cl <- c("All", sort(unique(nicd$Desc[nicd$n>5 & nicd$Group=="Genotyped" & nicd$Rollup=="Exact Match"])))
+#names(i) <- c("All", sort(unique(icd$Desc[icd$n>5 & icd$Group=="Genotyped" & icd$Rollup=="Exact Match"])))
 i <- unlist(lapply(strsplit(cl, " "), FUN=`[[`, 1))
 names(i) <- cl
 
@@ -110,7 +112,6 @@ ui <- dashboardPage(
         )
       ),
         
- #end row2
       fluidRow(
         column(width=8,
                box(
@@ -202,11 +203,13 @@ server <- function(input, output) {
     plot_eth <- eth %>% 
          group_by(RACE) %>% tally() %>% mutate(PCT=n/sum(n))
 
-    levs=rev(c("WHITE", "BLACK", "OTHER", "ASIAN"))
+    levs=rev(c("White", "Black", "Other", "Asian"))
+    rcols <- c("#1B9E77","#D95F02","#7570B3","#E7298A")
+    names(rcols) <- levs
     
     plot_eth$Label <- paste(signif(plot_eth$PCT*100, digits = 2), "%")
     ggplot(plot_eth) + geom_bar(aes(x=factor(RACE, levels=rev(levs)), y=n, fill = factor(RACE, levels=rev(levs))), stat="identity") +
-      scale_fill_brewer(palette = "Dark2")  +
+      scale_fill_manual(values =  rcols)  +
       theme_minimal() +
       theme(panel.background = element_rect(fill = "#ffffff", color="#ffffff"), 
             plot.background = element_rect(fill = "#ffffff", color = "#ffffff"),
@@ -215,14 +218,13 @@ server <- function(input, output) {
             axis.text = element_text(color="#000000"),
             axis.title = element_text(color="#000000")) + 
       guides(fill="none") +
-      labs(x="RACE", y="Number of Patients") +
+      labs(x="Race", y="Number of Patients") +
       geom_text(aes(label=Label, x=factor(RACE, levels=rev(levs)), y=n+(max(plot_eth$n)/20)), position=position_dodge(0.9), vjust=0) +
       scale_y_continuous(labels = comma, breaks = pretty_breaks())
   })
   
 ###TABLE
   output$table <- renderTable(
-    #print(input$selecticd)
      if(input$selecticd=="All"){
        if(input$select=="Genotyped"){
         data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9[icd$SUBJ_GROUP==input$select])), big.mark = ",")),
@@ -263,7 +265,7 @@ server <- function(input, output) {
 
   ###ICD COMORBIDITY  
   output$plot3 <- renderPlot({
-    #Ordered Levels per Facet
+    ##Order factor labels of facet
     #if (length(input$table_rows_selected)){
     #  print(paste0("this",as.character(input$table_rows_selected)))
     #  j <- as.integer(as.character(input$table_rows_selected))
@@ -281,7 +283,6 @@ server <- function(input, output) {
     #    arrange(GENDER,N) %>% 
     #    mutate(.r=row_number())
     #}
-    
     if(input$select=="Genotyped"){
       if(input$selecticd=="All"){
         pre_icd <- icd[which(icd$SUBJ_GROUP==input$select),]
@@ -355,7 +356,7 @@ server <- function(input, output) {
       guides(fill="none") +
       scale_y_continuous(labels = comma) +
       labs(y="Number of Patients")
-    if(length(unique(plot_rec$SPECIMEN))>1){ p <- p + facet_wrap(.~SPECIMEN, scales="free") }
+    if(length(unique(plot_rec$SPECIMEN))>1){ p <- p + facet_wrap(.~SPECIMEN, scales="free_y") }
     p
   })
   
