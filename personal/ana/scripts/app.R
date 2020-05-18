@@ -5,8 +5,6 @@
 library(shiny)
 library(shinydashboard)
 library(ggplot2)
-#library(DT)
-#library(data.table)
 library(dplyr)
 library(ggiraph)
 library(ggforce)
@@ -20,7 +18,7 @@ source("dashboardtheme.R")
 ###Data
 demo <- read.delim("PMBB_DEMO.txt", stringsAsFactors = FALSE)
 demo$PT_ID <- as.character(demo$PT_ID)
-icd <- as.data.frame(data.table::fread("PMBB_ICD9_map_with_category.txt", stringsAsFactors = FALSE))
+icd <- as.data.frame(data.table::fread("PMBB_ICD9_map_with_category_with_desc.txt", stringsAsFactors = FALSE, quote=""))
 icd$PT_ID <- as.character(icd$PT_ID)
 #icd$DIG4 <- ifelse(nchar(icd$GEM_ICD9)==6, substr(icd$GEM_ICD9, 1, nchar(icd$GEM_ICD9)-1), ifelse(nchar(icd$GEM_ICD9)==5, icd$GEM_ICD9, NA) )
 #icd$DIG3 <- gsub("\\..*","",icd$GEM_ICD9)
@@ -31,21 +29,25 @@ icd$PT_ID <- as.character(icd$PT_ID)
 #npmbb$SUBJ_GROUP <- "PMBB"
 #ngeno$SUBJ_GROUP <- "Genotyped"
 #write.table(rbind(npmbb, ngeno), file="PMBB_ICD9_map_with_category_with_rollup.txt", sep="\t", row.names = FALSE, quote = FALSE)
-nicd <- read.delim("PMBB_ICD9_N_with_rollup.txt", stringsAsFactors = FALSE)
+#con <- unique(icd[, c(1,5)])
+#nicdmap <- merge(nicd, con, by.x = "Code", by.y = "GEM_ICD9", all.x = TRUE)
+nicd <- read.delim("PMBB_ICD9_N_with_rollup_with_desc.txt", stringsAsFactors = FALSE)
 lab <- as.data.frame(data.table::fread("LABS_STD_SUMMARY_SUBJ.txt"))
 lab$PT_ID <- as.character(lab$PT_ID)
 lab$RESULT_VALUE <- as.numeric(lab$RESULT_VALUE)
-l <- unique(lab$Lab)
+l <- sort(unique(lab$Lab))
 m <- c("MEDIAN", "MAX", "MIN")
-names(l) <- unique(lab$Lab)
+names(l) <- sort(unique(lab$Lab))
 rec <- read.delim("pmbb_recruitment_location.txt")
 rec$PT_ID <- as.character(rec$PT_ID)
-i <- c("All", sort(unique(nicd$Code[nicd$n>5 & nicd$Group=="Genotyped" & nicd$Rollup=="Exact Match"])))
-names(i) <- c("All", sort(unique(nicd$Code[nicd$n>5 & nicd$Group=="Genotyped" & nicd$Rollup=="Exact Match"])))
+cl <- c("All", sort(unique(nicd$Desc[nicd$n>5 & nicd$Group=="Genotyped" & nicd$Rollup=="Exact Match"])))
+#names(i) <- c("All", sort(unique(icd$Desc[icd$n>5 & icd$Group=="Genotyped" & icd$Rollup=="Exact Match"])))
+i <- unlist(lapply(strsplit(i, " "), FUN=`[[`, 1))
+names(i) <- cl
 
 ###UI
 ui <- dashboardPage(
-  dashboardHeader(title="PMBB Demographics"),
+  dashboardHeader(title="PennMed BioBank"),
   dashboardSidebar(disable = TRUE),
   dashboardBody(
     shinyDashboardThemes(
@@ -230,31 +232,40 @@ server <- function(input, output) {
   output$table <- renderTable(
     #print(input$selecticd)
      if(input$selecticd=="All"){
-        data.frame(Group=c("All PMBB", "Genotyped"),
-                   Codes=c(formatC(length(unique(icd$GEM_ICD9)), big.mark = ","), formatC(length(unique(icd$GEM_ICD9[icd$SUBJ_GROUP=="Genotyped"])), big.mark=",")),
-                   Patients=c(formatC(length(unique(icd$PT_ID)), big.mark = ","), formatC(length(unique(icd$PT_ID[icd$SUBJ_GROUP=="Genotyped"])), big.mark=",")))
+       if(input$select=="Genotyped"){
+        data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9[icd$SUBJ_GROUP==input$select])), big.mark = ",")),
+                   Patients=c(formatC(length(unique(icd$PT_ID[icd$SUBJ_GROUP==input$select])), big.mark=",")),
+                   Group=c(as.character(input$select))
+                   )
+       } else {
+         data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9)), big.mark = ",")),
+                    Patients=c(formatC(length(unique(icd$PT_ID)), big.mark=",")),
+                    Group=c("PMBB")
+         )
+       }
      } else { 
        if(nchar(as.character(input$selecticd))==6){
-         tab_nicd <- rbind( nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match") , ],
-                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-1) & nicd$Rollup=="4-digit"),],
-                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-3) & nicd$Rollup=="3-digit"),]
+         tab_nicd <- rbind( nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & nicd$Group==input$select) , ],
+                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-1) & nicd$Rollup=="4-digit" & nicd$Group==input$select),],
+                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-3) & nicd$Rollup=="3-digit" & nicd$Group==input$select),]
          )
        } else {
          if(nchar(as.character(input$selecticd))==5){
-           tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match"), ],
-                             nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="4-digit"), ],
-                             nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-2) & nicd$Rollup=="3-digit"), ]
+           tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & nicd$Group==input$select), ],
+                             nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="4-digit" & nicd$Group==input$select), ],
+                             nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-2) & nicd$Rollup=="3-digit" & nicd$Group==input$select), ]
 
            )
          } else {
-             tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match"), ],
-                               nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="3-digit"), ]
+             tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & nicd$Group==input$select), ],
+                               nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="3-digit" & nicd$Group==input$select), ]
              )
              
            }
        }
        tab_nicd$Patients <- formatC(tab_nicd$n, big.mark=",")
-       tab_nicd[, c(1,2,5,4)]
+       tab_nicd$Description <- sub(".*? ", "", tab_nicd$Desc)
+       tab_nicd[, c(1,2,6,7)]
      } 
   )
 
@@ -280,10 +291,10 @@ server <- function(input, output) {
     #}
     if(input$select=="Genotyped"){
       if(input$selecticd=="All"){
-        pre_icd <- icd[which(demo$SUBJ_GROUP==input$select),]
+        pre_icd <- icd[which(icd$SUBJ_GROUP==input$select),]
       } else { 
         ids <- unique(icd$PT_ID[icd$GEM_ICD9==input$selecticd])
-        pre_icd <- icd[which(demo$SUBJ_GROUP==input$select & icd$PT_ID %in% ids ),] 
+        pre_icd <- icd[which(icd$SUBJ_GROUP==input$select & icd$PT_ID %in% ids ),] 
       }
     } else {
       if(input$selecticd=="All"){
@@ -378,7 +389,7 @@ server <- function(input, output) {
     
     ggplot(data=plot_lab) + 
       geom_boxplot(aes(y=RESULT_VALUE, x=1.25), width=0.25, color="#1B9E77", fill=NA) +
-      geom_jitter(aes(y=RESULT_VALUE, x=1), color="#1B9E77", position=position_jitter(width = 0.10, height=0), size=0.5, alpha=0.3) + 
+      geom_jitter(aes(y=RESULT_VALUE, x=1), color="#1B9E77", position=position_jitter(width = 0.10, height=0), alpha=0.3) + 
       xlim(0.9,1.4) + coord_flip() + theme_minimal() + 
       theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), axis.title.y = element_blank(), panel.background = element_blank()) + 
       ylab(paste0("Result Value (", un, ")")) +
