@@ -38,6 +38,7 @@ names(i) <- cl
 ui <- dashboardPage(
   dashboardHeader(title="PennMed BioBank"),
   dashboardSidebar(disable = TRUE),
+  #dashboardBody(tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "style.css")),
   dashboardBody(
     shinyDashboardThemes(
       theme = "pmbb"
@@ -146,7 +147,12 @@ ui <- dashboardPage(
         column(width = 12,
                box(
                  title = "FAQ", width = NULL, background = "navy",status = "primary", solidHeader = TRUE,
-                 ""
+                 "In the case that a patient in Penn Medicine BioBank has multiple tissue specimens, they will be included in counts for both 'Blood' and 'Tissue.'\n
+                  All ICD codes were mapped to ICD-9 using the General Equivalency Mappings (GEMs) developed by the Centers for Medicare and Medicaid Services and CDC's National Center for Health Statistics.\n
+                  ICD multimorbidities were calculated by the 10 codes with highest number of individuals given the specified cohort and ICD filters.\n
+                  Currently it is possible to filter by all ICD-9 codes with >= 5 patients in the smallest cohort (i.e. genotyped individuals) in order to generate a distribution.\n 
+                  Clinical lab values were converted into standard units when possible (ex. mg/dL can be converted to g/dL mathematically) and excluded when no such conversion could be made.\n
+                  Individual clinical lab values were not otherwise removed."
                )
         )     
         
