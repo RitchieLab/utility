@@ -68,7 +68,7 @@ ui <- dashboardPage(
                    title = "Cohort Selection",
                    solidHeader = TRUE,
                    status = "primary",
-                   selectInput("select", "Select entire Penn Medicine Biobank or patients with genotype data", c("PMBB" = "PMBB", "Genotyped" = "Genotyped")),
+                   selectInput("select", "Select entire Penn Medicine BioBank or patients with genotype data", c("PMBB" = "PMBB", "Genotyped" = "Genotyped")),
                    width=NULL
                  )),
           
