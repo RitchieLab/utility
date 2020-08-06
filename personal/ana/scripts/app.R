@@ -304,14 +304,7 @@ server <- function(input, output) {
     if(input$select=="Genotyped"){
       if(input$selecticd=="All"){
         #pre_icd <- icd[which(icd$SUBJ_GROUP==input$select),]
-        plot_icd <-structure(list(GEM_ICD9 = c("401.9", "272.4", "786.05", "530.81", 
-                                               "780.79", "414.01", "V15.82", "285.9", "401.1", "V70.0"), 
-                                  Category = c("Circulatory", 
-                                               "Endocrine/metabolic", "Symptoms/findings", "Digestive", "Symptoms/findings", 
-                                               "Circulatory", "Morbidity/mortality", "Blood/immune", "Circulatory", 
-                                               "Morbidity/mortality"), 
-                                  n = c(14201L, 11651L, 8017L, 7730L, 7696L, 7439L, 7384L, 7288L, 6939L, 6914L)), 
-                             class = "data.frame", row.names = c(NA, -10L))
+        plot_icd <- ###ADD
       } else { 
         ids <- unique(icd$PT_ID[icd$GEM_ICD9==input$selecticd])
         pre_icd <- icd[which(icd$SUBJ_GROUP==input$select & icd$PT_ID %in% ids ),] 
@@ -320,13 +313,7 @@ server <- function(input, output) {
     } else {
       if(input$selecticd=="All"){
         #pre_icd <- icd
-        plot_icd <- structure(list(GEM_ICD9 = c("401.9", "272.4", "V70.0", "530.81", 
-                                                "V05.9", "780.79", "V72.84", "V15.82", "278.00", "786.05"), 
-                                   Category = c("Circulatory", "Endocrine/metabolic", "Morbidity/mortality", "Digestive", "Morbidity/mortality", 
-                                                "Symptoms/findings", "Morbidity/mortality", "Morbidity/mortality", 
-                                                  "Endocrine/metabolic", "Symptoms/findings"), 
-                                   n = c(30528L, 24365L,  19500L, 18814L, 18232L, 17459L, 16952L, 16611L, 15037L, 14912L)), 
-                              class = "data.frame", row.names = c(NA, -10L))
+        plot_icd <- ###ADD
         
       } else {
         ids <- unique(icd$PT_ID[icd$GEM_ICD9==input$selecticd])
