@@ -148,18 +148,18 @@ ui <- dashboardPage(
                box(
                  title = "FAQ", width = NULL, background = "navy",status = "primary", solidHeader = TRUE,
                  "In the case that a patient in Penn Medicine BioBank has multiple tissue specimens, they will be included in counts for both 'Blood' and 'Tissue.'\n
-                  All ICD codes were mapped to ICD-9 using the General Equivalency Mappings (GEMs) developed by the Centers for Medicare and Medicaid Services and CDC's National Center for Health Statistics.\n
-                  ICD multimorbidities were calculated by the 10 codes with highest number of individuals given the specified cohort and ICD filters.\n
-                  Currently it is possible to filter by all ICD-9 codes with >= 5 patients in the smallest cohort (i.e. genotyped individuals) in order to generate a distribution.\n 
-                  Clinical lab values were converted into standard units when possible (ex. mg/dL can be converted to g/dL mathematically) and excluded when no such conversion could be made.\n
-                  Individual clinical lab values were not otherwise removed."
+                 All ICD codes were mapped to ICD-9 using the General Equivalency Mappings (GEMs) developed by the Centers for Medicare and Medicaid Services and CDC's National Center for Health Statistics.\n
+                 ICD multimorbidities were calculated by the 10 codes with highest number of individuals given the specified cohort and ICD filters.\n
+                 Currently it is possible to filter by all ICD-9 codes with >= 5 patients in the smallest cohort (i.e. genotyped individuals) in order to generate a distribution.\n 
+                 Clinical lab values were converted into standard units when possible (ex. mg/dL can be converted to g/dL mathematically) and excluded when no such conversion could be made.\n
+                 Individual clinical lab values were not otherwise removed."
                )
-        )     
+               )     
         
-      )
-    )
-  )
-)
+               )
+        )
+        )
+        )
 
 ###Server
 server <- function(input, output) { 
@@ -303,20 +303,39 @@ server <- function(input, output) {
     #}
     if(input$select=="Genotyped"){
       if(input$selecticd=="All"){
-        pre_icd <- icd[which(icd$SUBJ_GROUP==input$select),]
+        #pre_icd <- icd[which(icd$SUBJ_GROUP==input$select),]
+        plot_icd <-structure(list(GEM_ICD9 = c("401.9", "272.4", "786.05", "530.81", 
+                                               "780.79", "414.01", "V15.82", "285.9", "401.1", "V70.0"), 
+                                  Category = c("Circulatory", 
+                                               "Endocrine/metabolic", "Symptoms/findings", "Digestive", "Symptoms/findings", 
+                                               "Circulatory", "Morbidity/mortality", "Blood/immune", "Circulatory", 
+                                               "Morbidity/mortality"), 
+                                  n = c(14201L, 11651L, 8017L, 7730L, 7696L, 7439L, 7384L, 7288L, 6939L, 6914L)), 
+                             class = "data.frame", row.names = c(NA, -10L))
       } else { 
         ids <- unique(icd$PT_ID[icd$GEM_ICD9==input$selecticd])
         pre_icd <- icd[which(icd$SUBJ_GROUP==input$select & icd$PT_ID %in% ids ),] 
+        plot_icd <- head(unique(pre_icd[,1:3]) %>% group_by(GEM_ICD9, Category) %>% tally() %>% arrange(desc(n)), n=10)
       }
     } else {
       if(input$selecticd=="All"){
-        pre_icd <- icd
+        #pre_icd <- icd
+        plot_icd <- structure(list(GEM_ICD9 = c("401.9", "272.4", "V70.0", "530.81", 
+                                                "V05.9", "780.79", "V72.84", "V15.82", "278.00", "786.05"), 
+                                   Category = c("Circulatory", "Endocrine/metabolic", "Morbidity/mortality", "Digestive", "Morbidity/mortality", 
+                                                "Symptoms/findings", "Morbidity/mortality", "Morbidity/mortality", 
+                                                  "Endocrine/metabolic", "Symptoms/findings"), 
+                                   n = c(30528L, 24365L,  19500L, 18814L, 18232L, 17459L, 16952L, 16611L, 15037L, 14912L)), 
+                              class = "data.frame", row.names = c(NA, -10L))
+        
       } else {
         ids <- unique(icd$PT_ID[icd$GEM_ICD9==input$selecticd])
         pre_icd <- icd[which(icd$PT_ID %in% ids ),] 
+        plot_icd <- head(unique(pre_icd[,1:3]) %>% group_by(GEM_ICD9, Category) %>% tally() %>% arrange(desc(n)), n=10)
       }
     }
-    plot_icd <- head(unique(pre_icd[,1:3]) %>% group_by(GEM_ICD9, Category) %>% tally() %>% arrange(desc(n)), n=10)
+    #dput(plot_icd)
+    #plot_icd <- head(unique(pre_icd[,1:3]) %>% group_by(GEM_ICD9, Category) %>% tally() %>% arrange(desc(n)), n=10)
     ilevs <- plot_icd$GEM_ICD9
     
     #icols <- c("#30123B", "#3F3E9C", "#4666DD", "#458CFD", "#2FB2F4", "#1AD4D0",
