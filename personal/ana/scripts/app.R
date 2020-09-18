@@ -152,7 +152,8 @@ ui <- dashboardPage(
                  ICD multimorbidities were calculated by the 10 codes with highest number of individuals given the specified cohort and ICD filters.\n
                  Currently it is possible to filter by all ICD-9 codes with >= 5 patients in the smallest cohort (i.e. genotyped individuals) in order to generate a distribution.\n 
                  Clinical lab values were converted into standard units when possible (ex. mg/dL can be converted to g/dL mathematically) and excluded when no such conversion could be made.\n
-                 Individual clinical lab values were not otherwise removed."
+                 Individual clinical lab values were not otherwise removed.***This dashboard is considered genotyped samples included in the 2019 data release. \n
+                 We are currently working on updates for the September 2020 release.***"
                )
                )     
         
