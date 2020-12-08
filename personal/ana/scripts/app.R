@@ -322,32 +322,23 @@ server <- function(input, output) {
         if(input$select=="Genotype") {
           # fill table using following code
           # unique(icd[grepl("Genotype", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
-          plot_icd <-structure(list(GEM_ICD9 = c("401.9", "272.4", "786.05", "530.81", "780.79",
-                                                "V15.82", "414.01", "285.9", "V70.0", "V05.9"), 
-                                    Category = c("Circulatory", "Endocrine/metabolic", "Symptoms/findings", "Digestive", "Symptoms/findings", 
-                                                 "Morbidity/mortality",  "Circulatory", "Blood/immune", "Morbidity/mortality", "Morbidity/mortality"), 
-                                   n = c(13738, 11271, 7864, 7544, 7534, 
-                                        7219, 7144, 7106, 6866, 6759)), 
+          plot_icd <-structure(list(GEM_ICD9 = c(), 
+                                    Category = c(), 
+                                   n = c()), 
                               class = "data.frame", row.names = c(NA, -10L))
         } else if(input$select=="Exome"){ 
           # fill table using following code
           # unique(icd[grepl("Exome", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
-          plot_icd <-structure(list(GEM_ICD9 = c("401.9", "272.4", "V70.0", "530.81", "V05.9",
-                                                 "780.79", "V72.84", "V15.82", "278.00", "786.05"), 
-                                    Category = c("Circulatory", "Endocrine/metabolic", "Morbidity/mortality", "Digestive", "Morbidity/mortality", 
-                                                 "Symptoms/findings",  "Morbidity/mortality", "Morbidity/mortality", "Endocrine/metabolic", "Symptoms/findings"), 
-                                    n = c(22928, 18302, 14829, 14170, 13965, 
-                                          13073, 12822, 12557, 11478, 11384)), 
+          plot_icd <-structure(list(GEM_ICD9 = c(), 
+                                    Category = c(), 
+                                    n = c()), 
                                class = "data.frame", row.names = c(NA, -10L))          
         } else { # Genotype | Exome
           # fill table using following code
           # unique(icd[grepl("Genotype|Exome", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
-          plot_icd <-structure(list(GEM_ICD9 = c("401.9", "272.4", "V70.0", "530.81", "V05.9",
-                                                 "780.79", "V72.84", "V15.82", "786.05", "278.00"), 
-                                    Category = c("Circulatory", "Endocrine/metabolic", "Morbidity/mortality", "Digestive", "Morbidity/mortality",
-                                                 "Symptoms/findings",  "Morbidity/mortality", "Morbidity/mortality", "Symptoms/findings", "Endocrine/metabolic"), 
-                                    n = c(23701, 19024, 15104, 14593, 14248, 
-                                          13530, 13038, 12991, 11868, 11762)), 
+          plot_icd <-structure(list(GEM_ICD9 = c(), 
+                                    Category = c(), 
+                                    n = c()), 
                                class = "data.frame", row.names = c(NA, -10L))
         }
       } else { 
