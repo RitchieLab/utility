@@ -350,12 +350,9 @@ server <- function(input, output) {
       if(input$selecticd=="All"){
         # fill table using following code
         # unique(icd[, -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
-        plot_icd <- structure(list(GEM_ICD9 = c("401.9", "272.4", "V70.0", "530.81", "V05.9", 
-                                                "780.79", "V72.84", "V15.82", "278.00", "786.05"), 
-                                   Category = c("Circulatory", "Endocrine/metabolic", "Morbidity/mortality", "Digestive", "Morbidity/mortality",
-                                                "Symptoms/findings", "Morbidity/mortality", "Morbidity/mortality", "Endocrine/metabolic", "Symptoms/findings"), 
-                                   n = c(31888, 25480, 21087, 19851, 19497,
-                                         18680, 18183, 17500, 15931, 15795)), 
+        plot_icd <- structure(list(GEM_ICD9 = c(), 
+                                   Category = c(), 
+                                   n = c()), 
                               class = "data.frame", row.names = c(NA, -10L))
         
       } else {
