@@ -16,14 +16,14 @@ source("dashboardtheme.R")
 
 ###Data
 # demo <- read.delim("PMBB_DEMO_mapped_Dec-2020.txt", stringsAsFactors = FALSE)
-emo <- as.data.frame(vroom::vroom("PMBB_DEMO_mapped_Dec-2020.txt"))
+demo <- as.data.frame(vroom::vroom("PMBB_DEMO_mapped_Dec-2020.txt"))
 demo$PMBB_ID <- as.character(demo$PMBB_ID)
 #icd <- as.data.frame(data.table::fread("PMBB_ICD9_map_with_category_with_desc_Dec-2020.txt", stringsAsFactors = FALSE, quote=""))
 icd <- as.data.frame(vroom::vroom("PMBB_ICD9_map_with_category_with_desc_Dec-2020.txt"))
 #icd$PMBB_ID <- as.character(icd$PMBB_ID)
 
 #nicd <- read.delim("PMBB_ICD9_N_with_rollup_with_desc_Dec-2020.txt", stringsAsFactors = FALSE)
-icd <- as.data.frame(vroom::vroom("PMBB_ICD9_N_with_rollup_with_desc_Dec-2020.txt"))
+nicd <- as.data.frame(vroom::vroom("PMBB_ICD9_N_with_rollup_with_desc_Dec-2020.txt"))
 #lab <- as.data.frame(data.table::fread("LABS_STD_SUMMARY_SUBJ_Dec-2020.txt"))
 lab <- as.data.frame(vroom::vroom("LABS_STD_SUMMARY_SUBJ_Dec-2020.txt"))
 #lab$PMBB_ID <- as.character(lab$PMBB_ID)
