@@ -177,10 +177,10 @@ server <- function(input, output) {
   output$plot1 <- renderPlot({
     if(input$select!="PMBB"){
       if(input$selecticd=="All"){
-        plot_age <- demo[which(grepl(input$select,demo$SUBJ_GROUP, fixed = TRUE)),]
+        plot_age <- demo[which(grepl(input$select,demo$SUBJ_GROUP)),]
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        plot_age <- demo[which(grepl(input$select, demo$SUBJ_GROUP, fixed = TRUE) & demo$PMBB_ID %in% ids ),] 
+        plot_age <- demo[which(grepl(input$select, demo$SUBJ_GROUP) & demo$PMBB_ID %in% ids ),] 
       }
     #} else if(input$select=="GenotypeOrExome") {
     #  if(input$selecticd=="All"){
@@ -221,10 +221,10 @@ server <- function(input, output) {
   output$plot2 <- renderPlot({
     if(input$select!="PMBB"){
       if(input$selecticd=="All"){
-        eth <- demo[which(grepl(input$select, demo$SUBJ_GROUP, fixed = TRUE)),] 
+        eth <- demo[which(grepl(input$select, demo$SUBJ_GROUP)),] 
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        eth <- demo[which(grepl(input$select, demo$SUBJ_GROUP, fixed = TRUE) & demo$PMBB_ID %in% ids ),] 
+        eth <- demo[which(grepl(input$select, demo$SUBJ_GROUP) & demo$PMBB_ID %in% ids ),] 
       }
     } else {
       if(input$selecticd=="All"){
@@ -262,8 +262,8 @@ server <- function(input, output) {
   output$table <- renderTable(
     if(input$selecticd=="All"){
       if(input$select!="PMBB"){
-        data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9[grepl(input$select, icd$SUBJ_GROUP, fixed = TRUE)])), big.mark = ",")),
-                   Patients=c(formatC(length(unique(icd$PMBB_ID[grepl(input$select, icd$SUBJ_GROUP, fixed = TRUE)])), big.mark=",")),
+        data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9[grepl(input$select, icd$SUBJ_GROUP)])), big.mark = ",")),
+                   Patients=c(formatC(length(unique(icd$PMBB_ID[grepl(input$select, icd$SUBJ_GROUP)])), big.mark=",")),
                    Group=c(as.character(input$select)))
       } else {
         data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9)), big.mark = ",")),
@@ -273,20 +273,20 @@ server <- function(input, output) {
       }
     } else { 
       if(nchar(as.character(input$selecticd))==6){
-        tab_nicd <- rbind( nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group, fixed = TRUE)) , ],
-                           nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-1) & nicd$Rollup=="4-digit" & grepl(input$select, nicd$Group, fixed = TRUE)),],
-                           nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-3) & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group, fixed = TRUE)),]
+        tab_nicd <- rbind( nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group)) , ],
+                           nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-1) & nicd$Rollup=="4-digit" & grepl(input$select, nicd$Group)),],
+                           nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-3) & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group)),]
         )
       } else {
         if(nchar(as.character(input$selecticd))==5){
-          tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group, fixed = TRUE)), ],
-                            nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="4-digit" & grepl(input$select, nicd$Group, fixed = TRUE)), ],
-                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-2) & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group, fixed = TRUE)), ]
+          tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group)), ],
+                            nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="4-digit" & grepl(input$select, nicd$Group)), ],
+                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-2) & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group)), ]
                             
           )
         } else {
-          tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group, fixed = TRUE)), ],
-                            nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group, fixed = TRUE)), ]
+          tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group)), ],
+                            nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group)), ]
           )
           
         }
@@ -343,7 +343,7 @@ server <- function(input, output) {
         }
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        pre_icd <- icd[which(grepl(input$select, icd$SUBJ_GROUP, fixed = TRUE) & icd$PMBB_ID %in% ids ),] 
+        pre_icd <- icd[which(grepl(input$select, icd$SUBJ_GROUP) & icd$PMBB_ID %in% ids ),] 
         plot_icd <- head(unique(pre_icd[,c("GEM_ICD9", "Category", "PMBB_ID")]) %>% group_by(GEM_ICD9, Category) %>% tally() %>% arrange(desc(n)), n=10)
       }
     } else {
@@ -397,10 +397,10 @@ server <- function(input, output) {
   output$plot4 <- renderPlot({
     if(input$select!="PMBB"){
       if(input$selecticd=="All"){
-        plot_rec <- rec[which(grepl(input$select, rec$SUBJ_GROUP, fixed = TRUE)),]
+        plot_rec <- rec[which(grepl(input$select, rec$SUBJ_GROUP)),]
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        plot_rec <- rec[which(grepl(input$select, rec$SUBJ_GROUP, fixed = TRUE) & rec$PMBB_ID %in% ids ),] 
+        plot_rec <- rec[which(grepl(input$select, rec$SUBJ_GROUP) & rec$PMBB_ID %in% ids ),] 
       }
     } else {
       if(input$selecticd=="All"){
@@ -437,10 +437,10 @@ server <- function(input, output) {
   output$plot5 <- renderPlot({
     if(input$select!="PMBB"){
       if(input$selecticd=="All"){
-        plot_lab <- lab[which(grepl(input$select, lab$SUBJ_GROUP, fixed = TRUE) & lab$Lab==input$select_lab & lab$METRIC==input$select_metric),]
+        plot_lab <- lab[which(grepl(input$select, lab$SUBJ_GROUP) & lab$Lab==input$select_lab & lab$METRIC==input$select_metric),]
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        plot_lab <- lab[which(grepl(input$select, lab$SUBJ_GROUP, fixed = TRUE) & lab$Lab==input$select_lab & lab$PMBB_ID %in% ids & lab$METRIC==input$select_metric),] 
+        plot_lab <- lab[which(grepl(input$select, lab$SUBJ_GROUP) & lab$Lab==input$select_lab & lab$PMBB_ID %in% ids & lab$METRIC==input$select_metric),] 
       }
     } else {
       if(input$selecticd=="All"){
@@ -477,3 +477,4 @@ server <- function(input, output) {
 }
 
 shinyApp(ui, server)
+
