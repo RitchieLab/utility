@@ -1,6 +1,8 @@
 #Author: Anastasia Lucas 
 #Date: 2020-12-08
 #Code: https://github.com/RitchieLab/utility/blob/master/personal/ana/scripts/app.R
+# depends:
+#   vroom, stringi
 
 library(shiny)
 library(shinydashboard)
@@ -28,13 +30,12 @@ nicd <- as.data.frame(vroom::vroom("PMBB_ICD9_N_with_rollup_with_desc_Dec-2020.t
 lab <- as.data.frame(vroom::vroom("LABS_STD_SUMMARY_SUBJ_Dec-2020.txt"))
 #lab$PMBB_ID <- as.character(lab$PMBB_ID)
 lab$RESULT_VALUE <- as.numeric(lab$RESULT_VALUE)
-#l <- sort(unique(lab$Lab))
 # fill in using following code
 # l <- sort(unique(lab$Lab))
-l <- c()
+l <- c()  
 m <- c("MEDIAN", "MAX", "MIN")
 #names(l) <- sort(unique(lab$Lab))
-names(l)<- l
+names(l) <- l
 #rec <- read.delim("pmbb_recruitment_location_mapped_Dec-2020.txt")
 rec <- as.data.frame(vroom::vroom("pmbb_recruitment_location_mapped_Dec-2020.txt"))
 #rec$PMBB_ID <- as.character(rec$PMBB_ID)
@@ -166,7 +167,7 @@ ui <- dashboardPage(
                  Currently it is possible to filter by all ICD-9 codes with >= 5 patients in the smallest cohort (i.e. genotyped individuals) in order to generate a distribution.\n 
                  Clinical lab values were converted into standard units when possible (ex. mg/dL can be converted to g/dL mathematically) and excluded when no such conversion could be made.\n
                  Individual clinical lab values were not otherwise removed.\n
-                 ***This dashboard is includes genotyped samples included in the 2019 genotype data release and the September 2020 release of exome data.***"
+                 ***This dashboard includes genotyped samples from the July 2020 genotype data release and the September 2020 exome data release.***"
                )
                )     
                )
@@ -177,22 +178,16 @@ ui <- dashboardPage(
 ###Server
 server <- function(input, output) { 
   
+  
   ###AGE  
   output$plot1 <- renderPlot({
     if(input$select!="PMBB"){
       if(input$selecticd=="All"){
-        plot_age <- demo[which(grepl(input$select,demo$SUBJ_GROUP)),]
+        plot_age <- demo[which(stringi::stri_detect_regex(demo$SUBJ_GROUP, input$select)),]
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        plot_age <- demo[which(grepl(input$select, demo$SUBJ_GROUP) & demo$PMBB_ID %in% ids ),] 
+        plot_age <- demo[which(stringi::stri_detect_regex(demo$SUBJ_GROUP, input$select) & demo$PMBB_ID %in% ids ),] 
       }
-    #} else if(input$select=="GenotypeOrExome") {
-    #  if(input$selecticd=="All"){
-    #    plot_age <- demo[which(grepl("Genotype|Exome",demo$SUBJ_GROUP)),]
-    #  } else { 
-    #    ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-    #    plot_age <- demo[which(grepl(input$select, demo$SUBJ_GROUP) & demo$PMBB_ID %in% ids ),] 
-    #  }
     } else {
       if(input$selecticd=="All"){
         plot_age <- demo
@@ -225,10 +220,10 @@ server <- function(input, output) {
   output$plot2 <- renderPlot({
     if(input$select!="PMBB"){
       if(input$selecticd=="All"){
-        eth <- demo[which(grepl(input$select, demo$SUBJ_GROUP)),] 
+        eth <- demo[which(stringi::stri_detect_regex(demo$SUBJ_GROUP, input$select)),] 
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        eth <- demo[which(grepl(input$select, demo$SUBJ_GROUP) & demo$PMBB_ID %in% ids ),] 
+        eth <- demo[which(stringi::stri_detect_regex(demo$SUBJ_GROUP, input$select) & demo$PMBB_ID %in% ids ),] 
       }
     } else {
       if(input$selecticd=="All"){
@@ -266,8 +261,8 @@ server <- function(input, output) {
   output$table <- renderTable(
     if(input$selecticd=="All"){
       if(input$select!="PMBB"){
-        data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9[grepl(input$select, icd$SUBJ_GROUP)])), big.mark = ",")),
-                   Patients=c(formatC(length(unique(icd$PMBB_ID[grepl(input$select, icd$SUBJ_GROUP)])), big.mark=",")),
+        data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9[stringi::stri_detect_regex(icd$SUBJ_GROUP, input$select)])), big.mark = ",")),
+                   Patients=c(formatC(length(unique(icd$PMBB_ID[stringi::stri_detect_regex(icd$SUBJ_GROUP, input$select)])), big.mark=",")),
                    Group=c(as.character(input$select)))
       } else {
         data.frame(Codes=c(formatC(length(unique(icd$GEM_ICD9)), big.mark = ",")),
@@ -277,20 +272,20 @@ server <- function(input, output) {
       }
     } else { 
       if(nchar(as.character(input$selecticd))==6){
-        tab_nicd <- rbind( nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group)) , ],
-                           nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-1) & nicd$Rollup=="4-digit" & grepl(input$select, nicd$Group)),],
-                           nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-3) & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group)),]
+        tab_nicd <- rbind( nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & stringi::stri_detect_regex(nicd$Group, input$select)) , ],
+                           nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-1) & nicd$Rollup=="4-digit" & stringi::stri_detect_regex(nicd$Group, input$select)),],
+                           nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-3) & nicd$Rollup=="3-digit" & stringi::stri_detect_regex(nicd$Group, input$select)),]
         )
       } else {
         if(nchar(as.character(input$selecticd))==5){
-          tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group)), ],
-                            nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="4-digit" & grepl(input$select, nicd$Group)), ],
-                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-2) & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group)), ]
+          tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & stringi::stri_detect_regex(nicd$Group, input$select)), ],
+                            nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="4-digit" & stringi::stri_detect_regex(nicd$Group, input$select)), ],
+                            nicd[which(nicd$Code==substr(input$selecticd, 1, nchar(input$selecticd)-2) & nicd$Rollup=="3-digit" & stringi::stri_detect_regex(nicd$Group, input$select)), ]
                             
           )
         } else {
-          tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & grepl(input$select, nicd$Group)), ],
-                            nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="3-digit" & grepl(input$select, nicd$Group)), ]
+          tab_nicd <- rbind(nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="Exact Match" & stringi::stri_detect_regex(nicd$Group, input$select)), ],
+                            nicd[which(nicd$Code==input$selecticd & nicd$Rollup=="3-digit" & stringi::stri_detect_regex(nicd$Group, input$select)), ]
           )
           
         }
@@ -325,21 +320,21 @@ server <- function(input, output) {
       if(input$selecticd=="All"){
         if(input$select=="Genotype") {
           # fill table using following code
-          # unique(icd[grepl("Genotype", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
+          # unique(icd[stringi::stri_detect_regex("Genotype", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
           plot_icd <-structure(list(GEM_ICD9 = c(), 
                                     Category = c(), 
                                    n = c()), 
                               class = "data.frame", row.names = c(NA, -10L))
         } else if(input$select=="Exome"){ 
           # fill table using following code
-          # unique(icd[grepl("Exome", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
+          # unique(icd[stringi::stri_detect_regex("Exome", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
           plot_icd <-structure(list(GEM_ICD9 = c(), 
                                     Category = c(), 
                                     n = c()), 
                                class = "data.frame", row.names = c(NA, -10L))          
         } else { # Genotype | Exome
           # fill table using following code
-          # unique(icd[grepl("Genotype|Exome", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
+          # unique(icd[stringi::stri_detect_regex("Genotype|Exome", icd$SUBJ_GROUP), -2]) %>% group_by(GEM_ICD9, Desc, Category) %>% tally() %>% arrange(desc(n))
           plot_icd <-structure(list(GEM_ICD9 = c(), 
                                     Category = c(), 
                                     n = c()), 
@@ -347,7 +342,7 @@ server <- function(input, output) {
         }
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        pre_icd <- icd[which(grepl(input$select, icd$SUBJ_GROUP) & icd$PMBB_ID %in% ids ),] 
+        pre_icd <- icd[which(stringi::stri_detect_regex(icd$SUBJ_GROUP, input$select) & icd$PMBB_ID %in% ids ),] 
         plot_icd <- head(unique(pre_icd[,c("GEM_ICD9", "Category", "PMBB_ID")]) %>% group_by(GEM_ICD9, Category) %>% tally() %>% arrange(desc(n)), n=10)
       }
     } else {
@@ -401,10 +396,10 @@ server <- function(input, output) {
   output$plot4 <- renderPlot({
     if(input$select!="PMBB"){
       if(input$selecticd=="All"){
-        plot_rec <- rec[which(grepl(input$select, rec$SUBJ_GROUP)),]
+        plot_rec <- rec[which(stringi::stri_detect_regex(rec$SUBJ_GROUP, input$select)),]
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        plot_rec <- rec[which(grepl(input$select, rec$SUBJ_GROUP) & rec$PMBB_ID %in% ids ),] 
+        plot_rec <- rec[which(stringi::stri_detect_regex(rec$SUBJ_GROUP, input$select) & rec$PMBB_ID %in% ids ),] 
       }
     } else {
       if(input$selecticd=="All"){
@@ -441,10 +436,10 @@ server <- function(input, output) {
   output$plot5 <- renderPlot({
     if(input$select!="PMBB"){
       if(input$selecticd=="All"){
-        plot_lab <- lab[which(grepl(input$select, lab$SUBJ_GROUP) & lab$Lab==input$select_lab & lab$METRIC==input$select_metric),]
+        plot_lab <- lab[which(stringi::stri_detect_regex(lab$SUBJ_GROUP, input$select) & lab$Lab==input$select_lab & lab$METRIC==input$select_metric),]
       } else { 
         ids <- unique(icd$PMBB_ID[icd$GEM_ICD9==input$selecticd])
-        plot_lab <- lab[which(grepl(input$select, lab$SUBJ_GROUP) & lab$Lab==input$select_lab & lab$PMBB_ID %in% ids & lab$METRIC==input$select_metric),] 
+        plot_lab <- lab[which(stringi::stri_detect_regex(lab$SUBJ_GROUP, input$select) & lab$Lab==input$select_lab & lab$PMBB_ID %in% ids & lab$METRIC==input$select_metric),] 
       }
     } else {
       if(input$selecticd=="All"){
