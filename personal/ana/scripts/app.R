@@ -28,9 +28,13 @@ nicd <- as.data.frame(vroom::vroom("PMBB_ICD9_N_with_rollup_with_desc_Dec-2020.t
 lab <- as.data.frame(vroom::vroom("LABS_STD_SUMMARY_SUBJ_Dec-2020.txt"))
 #lab$PMBB_ID <- as.character(lab$PMBB_ID)
 lab$RESULT_VALUE <- as.numeric(lab$RESULT_VALUE)
-l <- sort(unique(lab$Lab))
+#l <- sort(unique(lab$Lab))
+# fill in using following code
+# l <- sort(unique(lab$Lab))
+l <- c()
 m <- c("MEDIAN", "MAX", "MIN")
-names(l) <- sort(unique(lab$Lab))
+#names(l) <- sort(unique(lab$Lab))
+names(l)<- l
 #rec <- read.delim("pmbb_recruitment_location_mapped_Dec-2020.txt")
 rec <- as.data.frame(vroom::vroom("pmbb_recruitment_location_mapped_Dec-2020.txt"))
 #rec$PMBB_ID <- as.character(rec$PMBB_ID)
