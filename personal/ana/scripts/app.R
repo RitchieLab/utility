@@ -140,7 +140,7 @@ ui <- dashboardPage(
                    title = "Clinical Labs",
                    solidHeader = TRUE,
                    status = "primary",
-                   selectInput("select_lab", "Currently data on 34 labs are available", l),
+                   selectInput("select_lab", "Currently data on 37 labs are available", l),
                    width=NULL
                  )
           ),
