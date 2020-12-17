@@ -1,7 +1,8 @@
 
 #clean glm fits for medications EWAS
 
-#fit <- lapply(clean_pheno[, c(cov, "PHENO", names(clean_pheno)[5:16])], 
+#xvars is vector of column names to regress over
+#fit <- lapply(clean_pheno[, xvars], 
 #                         function (x) return(tryCatch(do.call("glm", 
 #                                                              list(as.formula(fmla), 
 #                                                                   family=as.name("binomial"), 
@@ -24,7 +25,7 @@ clean_fit <- function(fit, phenotype, med_suffix){
   names(prco) <- c("Variable", "N", "Converged", "Beta", "SE", "Variable_pvalue","OR", "OR_LB", "OR_UB")
   prco <- as.data.frame(lapply(prco, unlist))
   prco[order(prco$Variable_pvalue), -1]
-  prco$Phenotype <- phenotypes
+  prco$Phenotype <- phenotype
   prco$Med <- gsub(med_suffix, "", prco$Variable)
   return(prco)
 }
