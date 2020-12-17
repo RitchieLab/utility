@@ -1,4 +1,6 @@
 
+#clean glm fits for medications EWAS
+
 #fit <- lapply(clean_pheno[, c(cov, "PHENO", names(clean_pheno)[5:16])], 
 #                         function (x) return(tryCatch(do.call("glm", 
 #                                                              list(as.formula(fmla), 
