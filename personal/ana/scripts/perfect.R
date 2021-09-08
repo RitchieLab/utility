@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # not perfect
 
 # options
