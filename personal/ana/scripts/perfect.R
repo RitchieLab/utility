@@ -1,14 +1,40 @@
-# this is not perfect
-# read input filenames from command line arguments
-args <- commandArgs(trailingOnly=TRUE)
-if (length(args) != 5) {
-        stop("usage: script.R <pheno.wsv> <geno.wsv> <pairs.wsv> <covariates.wsv> `<prefix>")
-}
-phenoFile = args[1]
-genoFile = args[2]
-pairsFile = args[3]
-covsFile = args[4]
-outPrefix = args[5]
+# not perfect
+
+# options
+library(optparse)
+option_list <- list(make_option(c("-p", "--pheno"),
+                                type="character",
+                                help="Path to phenotype file",
+                                dest="phenoFile",
+                                default=NULL),
+                    make_option(c("-g", "--geno"),
+                                type="character",
+                                help="Path to genotype file",
+                                dest="genoFile",
+                                default=NULL),
+                    make_option(c("-x", "--pairs"),
+                                type="character",
+                                dest="pairsFile",
+                                help="Path to pairs file",
+                                default=NULL),
+                    make_option(c("-c", "--covar"),
+                                type="character",
+                                help="Path to covariate file (optional)",
+                                dest="covsFile",
+                                default=NULL),
+                    make_option(c("-o", "--output"),
+                                type="character",
+                                help="Output file prefix",
+                                dest="outPrefix",
+                                default="PERFECT.results"))
+
+opt <- parse_args(OptionParser(option_list=option_list))
+
+phenoFile = opt$phenoFile
+genoFile = opt$genoFile
+pairsFile = opt$pairsFile
+covsFile = opt$covsFile
+outPrefix = opt$outPrefix
 
 # load libraries
 cat("loading R packages ...\n")
