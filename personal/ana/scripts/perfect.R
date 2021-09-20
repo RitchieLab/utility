@@ -77,7 +77,7 @@ if(length(grep("ID", names(pheno)))!=1){
         stop("Phenotype file must contain a single 'ID' column")
 }
 pheno$ID <- as.character(pheno$ID)
-cat("... done:",nrow(pheno),"samples,",ncol(pheno),"phenotypes\n")
+cat("... done:",nrow(pheno),"samples,",ncol(pheno)-1,"phenotypes\n")
 # check that no phenotypes have -9 as missing value
 if(any(pheno == -9, na.rm=TRUE)){
         print("Warning: Value '-9' found in phenotype file. Please ensure missing values are encoded as NA")
@@ -96,7 +96,7 @@ if(!is.null(covsFile)){
         if(any(covar == -9, na.rm=TRUE)){
                 print("Warning: Value '-9' found in covariate file. Treating as a real value.")
         }
-        cat("... done:",nrow(covar),"samples,",ncol(covar),"covariates\n")
+        cat("... done:",nrow(covar),"samples,",ncol(covar)-1,"covariates\n")
 } else {
         print("No covariate file provided")
         covar <- NULL
