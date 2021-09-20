@@ -80,7 +80,7 @@ pheno$ID <- as.character(pheno$ID)
 cat("... done:",nrow(pheno),"samples,",ncol(pheno),"phenotypes\n")
 # check that no phenotypes have -9 as missing value
 if(any(pheno == -9, na.rm=TRUE)){
-        prit("Warning: Value '-9' found in phenotype file. Please ensure missing values are encoded as NA")
+        print("Warning: Value '-9' found in phenotype file. Please ensure missing values are encoded as NA")
 }
 
 ###### read the covariate data
