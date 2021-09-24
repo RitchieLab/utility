@@ -6,6 +6,7 @@
 # The main thing to do in this script is clean up some of the redundancy with the 
 # variable assignments. Also some parts could probably stand to be a bit more
 # modular.
+# Additionally, add convergence check
 
 ###### options
 suppressPackageStartupMessages(library(optparse))
@@ -39,6 +40,11 @@ option_list <- list(make_option(c("-p", "--pheno"),
 				help="Reduced model specification: glmnet or glm\n\t\tDefault: glmnet",
 				dest="red_mod",
 				default="glmnet"),
+		    make_option(c("-l", "--lambda"),
+				type=numeric, 
+				help="Lambda value for ridge regression. If lambda is not supplied, minimum cv.ridge lambda will be chosen.\n\t\tDefault: NULL",
+				dest="lambda",
+				default=NULL),
 		    make_option(c("--penalty_main"),
 				type="character",
 				help="Penalty factors for main effects in a comma separated list\n\t\tDefault: 0,0",
@@ -69,6 +75,7 @@ covsFile = opt$covsFile
 outPrefix = opt$outPrefix
 red_mod = opt$red_mod
 full_mod = opt$full_mod
+lambda = opt$lambda
 penalty_main = as.integer(unlist(strsplit(opt$penalty_main, ",")))
 penalty_int = as.integer(opt$penalty_int)
 
@@ -135,6 +142,11 @@ if((red_mod=="glmnet" & full_mod=="glm") | (red_mod=="glm" & full_mod=="glmnet")
 	}
 }
 
+if((full_mod=="glm" | red_mod=="glm") & !is.null(lambda)){
+	print("Warning: Ignoring user supplied lambda for glm model(s)")
+}
+
+
 ####### read the phenotype data
 cat("reading phenotype data from '",phenoFile,"' ...\n")
 pheno = read.table(phenoFile, header=TRUE, sep=" ", quote="", comment.char="", stringsAsFactors=FALSE)
@@ -147,6 +159,9 @@ cat("... done:",nrow(pheno),"samples,",ncol(pheno)-1,"phenotypes\n")
 # check that no phenotypes have -9 as missing value
 if(any(pheno == -9, na.rm=TRUE)){
 	print("Warning: Value '-9' found in phenotype file. Please ensure missing values are encoded as NA") 
+}
+if(ncol(pheno)>2){
+	print("Warning: Only samples that contain no missing values across all phenotypes are considered.")
 }
 
 ###### read the covariate data
@@ -220,6 +235,8 @@ if(!is.null(covar)){
 
 }
 
+print(paste(nrow(merge_df), "samples remaining after excluding missing data"))
+
 if(!is.null(covar)){
 	covar_cols <- names(covar)[names(covar)!="ID"]
 } else {
@@ -286,9 +303,13 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 	# Find the best lambda using cross-validation with technique called "Warm Start" where every lambda in the grid (cv$lambda) is run
 	# The default is 10 fold crossvalidation
 	### this is completely unneeded in the case you are running glm for rull and reduced models but I don't have time to fix it
-	cv.ridge <- cv.glmnet(x, y, alpha = 0, family = "binomial") #can't set penalty = 0 
+	
+	if(is.null(lambda)){
+		cv.ridge <- cv.glmnet(x, y, alpha = 0, family = "binomial") #can't set penalty = 0 
+		lambda <- cv.ridge$lambda.min
+	}
 	#plot(cv.ridge)
-	cv.ridge$lambda.min 
+	#cv.ridge$lambda.min 
 	#coef(cv.ridge, cv.ridge$lambda.min)
 	
 	#Try 5 fold cross validation
@@ -303,9 +324,9 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 
 	# Full model based on glm or glmnet
 	if(full_mod=="glmnet"){
-		ridge.model <- glmnet(x, y, alpha = 0, family = "binomial", lambda = cv.ridge$lambda.min, penalty.factor = c(penalty_covs, # covariates
-															     penalty_main, # main effect
-															     rep(penalty_int, length(colnames(x)[grep("Intxn_Term", colnames(x))])))) # interaction terms 
+		ridge.model <- glmnet(x, y, alpha = 0, family = "binomial", lambda = lambda, penalty.factor = c(penalty_covs, # covariates
+														penalty_main, # main effect
+														rep(penalty_int, length(colnames(x)[grep("Intxn_Term", colnames(x))])))) # interaction terms 
 	
 	
 		# Make matrix that I can append to add the permutation output
@@ -342,7 +363,7 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 	
 	# Reduced model based on glm or glmnet
 	if(red_mod=="glmnet"){
-		reduced <- glmnet(x_reduced, y_reduced, alpha = 0, family = "binomial", lambda = cv.ridge$lambda.min, penalty.factor = c(penalty_covs, penalty_main)) 
+		reduced <- glmnet(x_reduced, y_reduced, alpha = 0, family = "binomial", lambda = lambda, penalty.factor = c(penalty_covs, penalty_main)) 
 	
 		#Make matrix that I can append to add the permutation output
 		deviance_reduced <- data.frame(reduced$dev.ratio)
