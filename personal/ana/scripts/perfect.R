@@ -8,7 +8,7 @@
 # modular.
 # Additionally, add convergence check
 
-###### options
+###### options ######
 suppressPackageStartupMessages(library(optparse))
 option_list <- list(make_option(c("-p", "--pheno"), 
 		                type="character", 
@@ -79,7 +79,11 @@ lambda = opt$lambda
 penalty_main = as.integer(unlist(strsplit(opt$penalty_main, ",")))
 penalty_int = as.integer(opt$penalty_int)
 
-###### load libraries
+###### end set options ######
+
+
+
+###### load libraries ######
 cat("loading R packages ...\n")
 suppressPackageStartupMessages(library(doParallel))
 suppressPackageStartupMessages(library(tidyverse))
@@ -88,7 +92,11 @@ suppressPackageStartupMessages(library(glmnet))
 suppressPackageStartupMessages(library(dummies))
 cat("... done\n")
 
-###### parameter checks
+###### end load libraries ######
+
+
+
+###### parameter checks ######
 # covariate parameter agreement
 if(is.null(opt$penalty_covs)){
         if(!is.null(opt$covsFile)){
@@ -129,6 +137,10 @@ if(red_mod=="glmnet" & isTRUE(all.identical(c(penalty_main,0)))){
 	}
 } 
 
+if(red_mod!=full_mod){
+	print("Warning: Full and reduced models are not using the same method. Results may be non-comparable if 'lambda' !=0")
+}
+
 # warning about glm penalty
 if((red_mod=="glmnet" & full_mod=="glm") | (red_mod=="glm" & full_mod=="glmnet")){
 	if(isFALSE(all.identical(c(penalty_main,0)))){
@@ -146,8 +158,12 @@ if((full_mod=="glm" | red_mod=="glm") & !is.null(lambda)){
 	print("Warning: Ignoring user supplied lambda for glm model(s)")
 }
 
+###### end parameter checks ######
 
-####### read the phenotype data
+
+
+###### read in input files ######
+# read the phenotype data
 cat("reading phenotype data from '",phenoFile,"' ...\n")
 pheno = read.table(phenoFile, header=TRUE, sep=" ", quote="", comment.char="", stringsAsFactors=FALSE)
 # check for ID column
@@ -161,10 +177,10 @@ if(any(pheno == -9, na.rm=TRUE)){
 	print("Warning: Value '-9' found in phenotype file. Please ensure missing values are encoded as NA") 
 }
 if(ncol(pheno)>2){
-	print("Warning: Only samples that contain no missing values across all phenotypes are considered.")
+	print("Warning: Only samples that contain no missing values across all phenotypes are considered. Consider providing a single phenotype.")
 }
 
-###### read the covariate data
+# read the covariate data
 if(!is.null(covsFile)){
 	cat("reading covariate data from '",covsFile,"' ...\n")
 	covar = read.table(covsFile, header=TRUE, sep=" ", quote="", comment.char="", stringsAsFactors=FALSE)
@@ -183,7 +199,7 @@ if(!is.null(covsFile)){
 	covar <- NULL
 }
 
-###### read the genotype data header row to identify available variants
+# read the genotype data header row to identify available variants
 cat("reading genotype header from '",genoFile,"' ...\n")
 colFilter = read.table(genoFile, header=TRUE, sep=" ", quote="", nrows=1, comment.char="", stringsAsFactors=FALSE)
 # check for ID column
@@ -192,13 +208,13 @@ if(length(grep("ID", names(colFilter)))!=1){
 }
 cat("... done:",length(colFilter)-1,"available variants\n")
 
-###### read the list of desired variant pairs and identify variants used in any pair
+# read the list of desired variant pairs and identify variants used in any pair
 cat("reading variant pairs from '",pairsFile,"' ...\n")
 pairs = read.table(pairsFile, header=TRUE, sep=" ", quote="", comment.char="", stringsAsFactors=FALSE)
 variants = make.names(unique(union(pairs[,1], pairs[,2])), unique=TRUE)
 cat("... done:",nrow(pairs),"pairs of",length(variants),"unique variants\n")
 
-###### check for needed variants not found in the header, and prepare the column filter
+# check for needed variants not found in the header, and prepare the column filter
 missing = setdiff(variants, names(colFilter))
 if (length(missing) > 0) {
 	cat("ERROR:",length(missing),"needed variant(s) not found in data file:\n")
@@ -209,7 +225,7 @@ colFilter[,] = "NULL"
 colFilter[, "ID"] = "character"
 colFilter[,variants] = "integer"
 
-###### read the full genotype data frame, but including only the needed columns
+# read the full genotype data frame, but including only the needed columns
 cat("reading genotype data ...\n")
 geno = read.table(genoFile, header=TRUE, sep=" ", quote="", colClasses=as.character(colFilter[1,]), comment.char="")
 cat("... done:",nrow(geno),"samples,",ncol(geno)-1,"variants\n")
@@ -218,7 +234,11 @@ if(any(geno == -9, na.rm=TRUE)){
 	stop("Value '-9' found in genotype file. Acceptable genotype values are: 0,1,2,NA.")
 }
 
-###### check for sample count match
+###### end read input files ######
+
+
+###### data checks ######
+# check for sample count match
 myl <- list(geno$ID, covar$ID, pheno$ID)
 if(max(lengths(lapply(1:length(myl), function(n) setdiff(myl[[n]], unlist(myl[-n])))))>0){
 	#cat("Sample count mismatch (",nrow(pheno),"pheno vs",nrow(geno),"geno vs",nrow(covar),"covar)\n")
@@ -226,7 +246,7 @@ if(max(lengths(lapply(1:length(myl), function(n) setdiff(myl[[n]], unlist(myl[-n
 	#stop("cannot continue.")
 }
 
-###### make sure data is in same order
+# make sure data is in same order
 merge_df <- pheno[complete.cases(pheno), ] %>%
 		inner_join(geno[complete.cases(geno), ], by="ID")
 if(!is.null(covar)){
@@ -249,7 +269,11 @@ pheno <- merge_df[, pheno_cols, drop=FALSE]
 covar <- merge_df[, names(covar)[names(covar)!="ID"], drop=FALSE] # allows for NULL
 geno <- merge_df[, geno_cols, drop=FALSE] 
 
-###### pre-shuffle each phenotype rather than re-doing it for every SNP pair
+###### end data checks ######
+
+
+###### permute phenotypes ######
+# pre-shuffle each phenotype rather than re-doing it for every SNP pair
 cat("generating permuted phenotypes ...\n")
 phenopermu = list()
 for (phenoNum in 1:ncol(pheno)) {
@@ -268,8 +292,11 @@ for (phenoNum in 1:ncol(pheno)) {
 	}
 }
 cat("... done\n")
+###### end permute phenotypes ######
 
-###### define pairwise processing loop function
+
+###### MAIN FUNCTION ######
+# define pairwise processing loop function
 process <- function(fullpheno, phenoNum, geno1, geno2) {
 	set.seed(123)
 	
@@ -286,37 +313,22 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 		              Intxn_Term=paste(geno[samples,geno1], "-", geno[samples,geno2])))
 	### FIT THE PENALIZED REGRESSION MODEL FOR INTERACTION TERM ONLY ###
 
-	#keep only phenotype and interaction term columns
-	#df[,2:3]<- list(NULL)
 	
 	# Dummy code categorical predictor variables
 	x <- dummy.data.frame(df)[,-1]
 	x <- as.matrix(x)
 	
-	# Dummy encode using model.matrix, this reduces 0-0 intxn term
-	#x <- model.matrix(Phenotypes~., df)[,-1]
-	#[,-1] removes the intercept column
 	
 	# Convert the outcome (class) to a numerical variable
 	y <- df[,1]
 	
 	# Find the best lambda using cross-validation with technique called "Warm Start" where every lambda in the grid (cv$lambda) is run
 	# The default is 10 fold crossvalidation
-	### this is completely unneeded in the case you are running glm for rull and reduced models but I don't have time to fix it
-	
 	if(is.null(lambda)){
 		cv.ridge <- cv.glmnet(x, y, alpha = 0, family = "binomial") #can't set penalty = 0 
 		lambda <- cv.ridge$lambda.min
 	}
-	#plot(cv.ridge)
-	#cv.ridge$lambda.min 
-	#coef(cv.ridge, cv.ridge$lambda.min)
 	
-	#Try 5 fold cross validation
-	#cv.ridge <- cv.glmnet(x, y, alpha = 0, family = "binomial", nfolds = 5)
-	#plot(cv.ridge)
-	#cv.ridge$lambda.min 
-	#coef(cv.ridge, cv.ridge$lambda.min)
 	
 	#Fit the final model (with the optimal lambda) on all data, and set the penalty to 0 for the main effects
 	
@@ -336,9 +348,13 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 
 	} else {
                 ridge.model <- glm(y~x, family = "binomial")
-		betas <- data.frame(as.matrix(ridge.model$coefficients))
-		dev.ratio <- as.matrix(ridge.model$deviance)
-		nulldev <- as.matrix(ridge.model$null.deviance)
+		if(isTRUE(ridge.model$converged)){
+			betas <- data.frame(as.matrix(ridge.model$coefficients))
+			dev.ratio <- as.matrix(1-(ridge.model$deviance/ridge.model$null.deviance))
+			nulldev <- as.matrix(ridge.model$null.deviance)
+		} else {
+			stop("Full model did not converge")
+		}
         } 
 
 
@@ -356,9 +372,6 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 	x_reduced <- as.matrix(x_reduced)
 	
 	# Dummy encode using model.matrix, this reduces 0-0 intxn term
-	#x_reduced <- model.matrix(Phenotypes~., df_reduced)[,-1]
-	#[,-1] removes the intercept column
-	# Convert the outcome (class) to a numerical variable
 	y_reduced <- df_reduced[,1] # identical to y — redundant
 	
 	# Reduced model based on glm or glmnet
@@ -371,10 +384,13 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 
 	} else {
 		reduced <- glm(y_reduced ~ x_reduced, family = "binomial")
-
-		#Make matrix that I can append to add the permutation output
-                deviance_reduced <- data.frame(reduced$deviance)
-                betas_reduced <- data.frame(reduced$coefficients)		
+		if(isTRUE(reduced$converged)){
+			#Make matrix that I can append to add the permutation output
+                	deviance_reduced <- data.frame(1-(reduced$deviance/reduced$null.dev))
+                	betas_reduced <- data.frame(reduced$coefficients)
+		} else {
+			stop("Reduced model did not converge")
+		}
 	}
 
 	betas_reduced <- betas_reduced[!grepl(paste0(c(covar_cols,"Intercept"), collapse="|"), row.names(betas_reduced)), , drop=FALSE]	
@@ -393,21 +409,17 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 	deviance_reduced_perm <- data.frame(deviance_reduced)
 	
 	for (i in 1:1000) {
-		# what is this n for?
-	        #n <- nrow(df)
+		####### WIP this is all pretty redundant and should be changed to only setting y_perm with x and x_reduced being consistent throughout
 		df[,extract_cols] = phenopermu[[phenoNum]][[i]]
 		# Dummy code categorical predictor variables
 		x_perm <- dummy.data.frame(df)[,-1]
 		x_perm <- as.matrix(x_perm)
-		#x_perm <- model.matrix(Phenotypes~., df)[,-1]
 		# Convert the outcome (class) to a numerical variable
 		y_perm <- df[,1]
 		# Choose lambda separately for each perm
-		#set.seed(i) #ask alex about this seed
-		### again this is unneeded for glm x glm
+		set.seed(i) #ask alex about this seed
+		### WIP again this is unneeded for glm x glm
 		cv.ridge_perm <- cv.glmnet(x_perm, y_perm, alpha = 0, family = "binomial")
-		cv.ridge_perm$lambda.min 
-		coef(cv.ridge_perm, cv.ridge_perm$lambda.min)
 		# Run
 		if(full_mod=="glmnet"){
 			ridge.model_perm <- glmnet(x_perm, y_perm, alpha = 0, family = "binomial", lambda = cv.ridge_perm$lambda.min, penalty.factor=c(penalty_covs, penalty_main))
@@ -416,13 +428,22 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
                 	nulldev_perm[i] <- data.frame(as.matrix(ridge.model_perm$nulldev))
 		} else {
 			ridge.model_perm <- glm(y_perm ~ x_perm, family = "binomial")
-                        tmp <- data.frame(as.matrix(ridge.model_perm$coefficients))
-                        dev.ratio_perm[i] <- data.frame(as.matrix(ridge.model_perm$deviance))
-                        nulldev_perm[i] <- data.frame(as.matrix(ridge.model_perm$null.deviance))
+			if(isTRUE(ridge.model_perm$converged)){
+                        	tmp <- data.frame(as.matrix(ridge.model_perm$coefficients))
+                        	dev.ratio_perm[i] <- data.frame(as.matrix(1-(ridge.model_perm$deviance/ridge.model_perm$null.dev)))
+                        	nulldev_perm[i] <- data.frame(as.matrix(ridge.model_perm$null.deviance))
+			} else {
+				print(paste("Full model", i, "did not converge"))
+				tmp <- NULL; dev.ratio_perm[i] <- NULL; nulldev_perm[i] <- NULL
+			}
 		}
 	        # Save outputs
-		betas_perm[i] <- tmp[!grepl(paste0(c(covar_cols,"Intercept"), collapse="|"), row.names(tmp)), , drop=FALSE]
-		
+		if(!is.null(tmp)){
+			betas_perm[i] <- tmp[!grepl(paste0(c(covar_cols,"Intercept"), collapse="|"), row.names(tmp)), , drop=FALSE]
+		} else {
+			betas_perm[i] <- rep(NA, ncol(x_perm))
+		}
+
 		### Permutation test for reduced model ###
 		# Keep same x matrix as above but only keep the main effects
 		x_perm_reduced <- x_perm[, c(names(covar), "SNP1", "SNP2")]
@@ -433,34 +454,23 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
                         tmp <- data.frame(as.matrix(reduced_perm$beta)) 
 		} else {
 			reduced_perm <- glm(y_perm ~ x_perm_reduced, family = "binomial")
-			deviance_reduced_perm[i] <- data.frame(as.matrix(reduced_perm$deviance))
-                	tmp <- data.frame(as.matrix(reduced_perm$coefficients))	
+			if(isTRUE(reduced_perm$converged)){
+				deviance_reduced_perm[i] <- data.frame(as.matrix(1-(reduced_perm$deviance/reduced_perm$null.deviance)))
+                		tmp <- data.frame(as.matrix(reduced_perm$coefficients))	
+			} else {
+				deviance_reduced_perm[i] <- NULL; tmp <- NULL			
+			}
 		}
 		# Save outputs
-		betas_reduced_perm[i] <- tmp[!grepl(paste0(c(covar_cols,"Intercept"), collapse="|"), row.names(tmp)), , drop=FALSE]
+		if(!is.null(tmp)){
+			betas_reduced_perm[i] <- tmp[!grepl(paste0(c(covar_cols,"Intercept"), collapse="|"), row.names(tmp)), , drop=FALSE]
+		} else {
+			betas_reduced_perm[i] <- rep(NA, ncol(x_perm_reduced))
+		}
 	}
 	
-	### note ###
-	# due to Error: from glmnet Fortran code (error code 10000); All penalty factors are <= 0 I decided to remove the penalty factor
-	
-	### Make matrix with permuted values ###
-	
-	# Full model
-	#betas_perm <- as.matrix(betas_perm)
-	#betas_perm <- data.frame(betas_perm)
-	#dev.ratio_perm <- as.matrix(dev.ratio_perm)
-	#dev.ratio_perm <- data.frame(dev.ratio_perm)
-	#nulldev_perm <- as.matrix(nulldev_perm)
-	#nulldev_perm <- data.frame(nulldev_perm)
-	
-	# Reduced model 
-	#betas_reduced_perm <- as.matrix(betas_reduced_perm)
-	#betas_reduced_perm <- data.frame(betas_reduced_perm)
-	#deviance_reduced_perm <- as.matrix(deviance_reduced_perm)
-	#deviance_reduced_perm <- data.frame(deviance_reduced_perm)
-	
 	# Bind the non permuted and permuted outputs and format column names
-	
+	### WIP this is unnecessary all_betas could be appended in the above loop by setting i = 2:1001	
 	# Full model
 	# note: change headers to reflect permuted and non permuted
 	all_betas <- cbind(betas,betas_perm)
@@ -494,10 +504,11 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 	colnames(all_nulldev.t)[1] <- 'nulldev'
 	dev <- cbind(all_dev.ratio.t,all_nulldev.t)
 	# Calculate our parameter of interest (measure of deviance: dev.ratio = 1-dev/nulldev)
-	dev[,3] <- (1-dev[,1])*dev[,2]
-	colnames(dev)[3] <- 'deviance_full'
+	#dev[,3] <- (1-dev[,1])*dev[,2]
+	#colnames(dev)[3] <- 'deviance_full'
 	# dev[,3] contains the deviances for each permuted dataset
-	
+	dev$deviance_full <- dev$nulldev*(1-dev$dev.ratio)	
+
 	### Calculate P-value ###
 	
 	# Calculate p-value: calculate the number of times the permuted test statistic exceeds the un-permuted and divide by the number of permutations (1000) to get a single p-value corresponding to the interaction term
@@ -512,8 +523,8 @@ process <- function(fullpheno, phenoNum, geno1, geno2) {
 	# Identify how many rows are =/> than the first row value (unpermuted)
 	count <- as.data.frame(rowSums(eLRT.abs >= eLRT.abs[1,]))
 	# Find sum of column and subtract 1 for row 1, divide by total tests
-	count_colSum <- (colSums(count) - 1)
-	pvalue <- (colSums(count) - 1)/1000
+	count_colSum <- (colSums(count, na.rm=TRUE) - 1)
+	pvalue <- (colSums(count) - 1)/(length(count[complete.cases(count),])-1)
 	
 	# collect results
 	return(cbind(pvalue, eLRT.abs[1,]))
