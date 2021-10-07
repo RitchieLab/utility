@@ -58,14 +58,14 @@ p1 <-  ggplot(data=data, aes(x=factor(CHR, levels=c(1:22, "X")), y=R2)) +
 		xlab("CHR") + 
 		ggtitle("Average Rsq per Chromosome") + 
 		theme_minimal()
-ggsave(p1, filename=paste0(outputfile, "_Rsq_by_CHR", image), dpi=300, height=7, width=14, units="in")
+ggsave(p1, filename=paste0(outputfile, "_Rsq_by_CHR.", image), dpi=300, height=7, width=14, units="in")
 
 ###Distribution of Rsq
 p2 <- ggplot(data=data, aes(x=R2)) + 
 	geom_density() + 
 	theme_minimal() + 
 	ggtitle("Distribution of Rsq")
-ggsave(p2, filename=paste0(outputfile, "_Rsq_dist", image), dpi=300, height=7, width=7, units="in")
+ggsave(p2, filename=paste0(outputfile, "_Rsq_dist.", image), dpi=300, height=7, width=7, units="in")
 
 ###Rsq by MAF
 #p3 <- ggplot(data=data, aes(x=MAF, y=R2)) + geom_hex(bins=100) + theme_minimal() + ggtitle("Rsq by Minor Allele Frequency")
