@@ -3,6 +3,7 @@
 ###### description ######
 # this script creates MAF and R2 summary plots 
 # for imputed genetic data
+# usage: ./imputation_plots.R --help
 
 suppressPackageStartupMessages(library(optparse))
 
