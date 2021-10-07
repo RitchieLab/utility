@@ -3,6 +3,7 @@
 ###### description ######
 # this script calls the sqlizeR package 
 # to create input statements from text files
+# usage: ./sqlize.R --help
 
 suppressPackageStartupMessages(library(optparse))
 
