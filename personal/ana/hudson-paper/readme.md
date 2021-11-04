@@ -1,1 +1,1 @@
-### This folder contains code and figures reference in the hudon R package visualization paper.
+### This folder contains code to create the figures in the hudson R package visualization paper.
