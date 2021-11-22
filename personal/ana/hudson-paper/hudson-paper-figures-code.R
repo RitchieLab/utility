@@ -1,23 +1,24 @@
 ###### Figure 1A ######
-hdl <- data.table::fread("AGEN_lipids_hapmap_hdl_m2.txt")
-ldl <- data.table::fread("AGEN_lipids_hapmap_ldl_m2.txt")
-cols <- c("MARKERNAME", "CHR", "POS", "P")
+sbp <- data.table::fread("27618452-GCST006259-EFO_0006335.h.tsv")
+dbp <- data.table::fread("27618452-GCST006258-EFO_0006336.h.tsv")
+cols <- c("hm_rsid", "hm_chrom", "hm_pos", "p_value")
 
-top <- as.data.frame(hdl[hdl$CHR %in% as.character(1:22), ..cols])
-bottom <- as.data.frame(ldl[ldl$CHR %in% as.character(1:22), ..cols])
-
+top <- as.data.frame(sbp[!is.na(sbp$hm_chrom), ..cols])
+bottom <- as.data.frame(dbp[!is.na(dbp$hm_chrom), ..cols])
 names(top) <- c("SNP", "CHR", "POS", "pvalue")
 names(bottom) <- names(top)
+
 hudson::gmirror(top = top,
                 bottom = bottom,
-                tline = 0.05/nrow(hdl),
-                bline = 0.05/nrow(ldl),
-                highlight_p = c(0.05/nrow(hdl),
-                                0.05/nrow(ldl)),
+                tline = 0.05/nrow(top),
+                bline = 0.05/nrow(bottom),
+                highlight_p = c(0.05/nrow(top),
+                                0.05/nrow(bottom)),
                 highlighter = "green",
-                annotate_snp = "rs445925",
-                toptitle = "Spracklen et al Lipids: HDL",
-                bottomtitle = "Spracklen et al Lipids: LDL",
+                annotate_snp = "rs11105354",
+                toptitle = "Ehret et al Blood Pressure: SBP",
+                bottomtitle = "Ehret et al Blood Pressure: DBP",
+                background = "white",
                 file="Figure_1A")
 
 ###### Figure 1B ######
